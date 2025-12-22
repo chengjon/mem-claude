@@ -254,10 +254,10 @@ export class SessionRoutes extends BaseRouteHandler {
   /**
    * Queue observations by claudeSessionId (post-tool-use-hook uses this)
    * POST /api/sessions/observations
-   * Body: { claudeSessionId, tool_name, tool_input, tool_response, cwd }
+   * Body: { claudeSessionId, tool_name, tool_input, tool_response, cwd, ai_response_text, ai_response_type }
    */
   private handleObservationsByClaudeId = this.wrapHandler((req: Request, res: Response): void => {
-    const { claudeSessionId, tool_name, tool_input, tool_response, cwd } = req.body;
+    const { claudeSessionId, tool_name, tool_input, tool_response, cwd, ai_response_text, ai_response_type } = req.body;
 
     if (!claudeSessionId) {
       return this.badRequest(res, 'Missing claudeSessionId');
@@ -345,6 +345,61 @@ export class SessionRoutes extends BaseRouteHandler {
       )
     });
 
+    // Save AI response and tool execution details if provided
+    if (ai_response_text) {
+      try {
+        const store = this.dbManager.getSessionStore();
+        
+        // Save AI response
+        const aiResponseId = store.saveAiResponse({
+          claude_session_id: claudeSessionId,
+          sdk_session_id: '', // Will be set later by worker
+          project: '', // Will be set from session
+          prompt_number: promptNumber,
+          response_text: ai_response_text,
+          response_type: ai_response_type || 'assistant',
+          tool_name: tool_name,
+          tool_input: cleanedToolInput,
+          tool_output: cleanedToolResponse,
+          created_at: new Date().toISOString(),
+          created_at_epoch: Date.now()
+        });
+
+        // Save tool execution details
+        store.saveToolExecution({
+          ai_response_id: aiResponseId,
+          claude_session_id: claudeSessionId,
+          sdk_session_id: '',
+          project: '',
+          prompt_number: promptNumber,
+          tool_name: tool_name,
+          tool_input: cleanedToolInput,
+          tool_output: cleanedToolResponse,
+          tool_duration_ms: null,
+          files_created: this.extractFilesFromTool(tool_input, tool_response, 'created'),
+          files_modified: this.extractFilesFromTool(tool_input, tool_response, 'modified'),
+          files_read: this.extractFilesFromTool(tool_input, tool_response, 'read'),
+          files_deleted: this.extractFilesFromTool(tool_input, tool_response, 'deleted'),
+          error_message: null,
+          success: true,
+          created_at: new Date().toISOString(),
+          created_at_epoch: Date.now()
+        });
+
+        logger.debug('SESSION', 'Saved AI response and tool execution', {
+          sessionDbId,
+          toolName: tool_name,
+          aiResponseId,
+          responseType: ai_response_type || 'assistant'
+        });
+      } catch (error) {
+        logger.error('SESSION', 'Failed to save AI response and tool execution', {
+          sessionDbId,
+          toolName: tool_name
+        }, error as Error);
+      }
+    }
+
     // Ensure SDK agent is running
     this.ensureGeneratorRunning(sessionDbId, 'observation');
 
@@ -353,6 +408,43 @@ export class SessionRoutes extends BaseRouteHandler {
 
     res.json({ status: 'queued' });
   });
+
+  /**
+   * Extract file operations from tool input/output
+   */
+  private extractFilesFromTool(toolInput: any, toolOutput: any, operation: 'created' | 'modified' | 'read' | 'deleted'): string | null {
+    try {
+      const files: string[] = [];
+
+      // Extract from tool input
+      if (toolInput) {
+        if (toolInput.file_path) {
+          files.push(toolInput.file_path);
+        }
+        if (toolInput.notebook_path) {
+          files.push(toolInput.notebook_path);
+        }
+        if (toolInput.file_paths && Array.isArray(toolInput.file_paths)) {
+          files.push(...toolInput.file_paths);
+        }
+      }
+
+      // Extract from tool output (for Read operations)
+      if (operation === 'read' && toolOutput) {
+        if (toolOutput.file_path) {
+          files.push(toolOutput.file_path);
+        }
+        if (toolOutput.notebook_path) {
+          files.push(toolOutput.notebook_path);
+        }
+      }
+
+      return files.length > 0 ? JSON.stringify(files) : null;
+    } catch (error) {
+      logger.debug('SESSION', 'Failed to extract files from tool', { operation }, error);
+      return null;
+    }
+  }
 
   /**
    * Queue summarize by claudeSessionId (summary-hook uses this)

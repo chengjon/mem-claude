@@ -136,3 +136,45 @@ export interface ObservationWithContext {
   prompt_number?: number;
   discovery_tokens?: number;
 }
+
+/**
+ * AI Response database record
+ */
+export interface AiResponseRecord {
+  id: number;
+  claude_session_id: string;
+  sdk_session_id: string | null;
+  project: string;
+  prompt_number: number;
+  response_text: string;
+  response_type: 'assistant' | 'tool_result' | 'error';
+  tool_name: string | null;
+  tool_input: string | null;
+  tool_output: string | null;
+  created_at: string;
+  created_at_epoch: number;
+}
+
+/**
+ * Tool execution database record
+ */
+export interface ToolExecutionRecord {
+  id: number;
+  ai_response_id: number | null;
+  claude_session_id: string;
+  sdk_session_id: string | null;
+  project: string;
+  prompt_number: number;
+  tool_name: string;
+  tool_input: string | null;
+  tool_output: string | null;
+  tool_duration_ms: number | null;
+  files_created: string | null;
+  files_modified: string | null;
+  files_read: string | null;
+  files_deleted: string | null;
+  error_message: string | null;
+  success: boolean;
+  created_at: string;
+  created_at_epoch: number;
+}

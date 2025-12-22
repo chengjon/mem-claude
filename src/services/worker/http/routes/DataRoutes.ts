@@ -35,6 +35,11 @@ export class DataRoutes extends BaseRouteHandler {
     app.get('/api/observations', this.handleGetObservations.bind(this));
     app.get('/api/summaries', this.handleGetSummaries.bind(this));
     app.get('/api/prompts', this.handleGetPrompts.bind(this));
+    app.get('/api/ai-responses', this.handleGetAiResponses.bind(this));
+    app.get('/api/tool-executions', this.handleGetToolExecutions.bind(this));
+    
+    // 统一搜索端点
+    app.get('/api/search-conversations', this.handleSearchConversations.bind(this));
 
     // Fetch by ID endpoints
     app.get('/api/observation/:id', this.handleGetObservationById.bind(this));
@@ -77,10 +82,136 @@ export class DataRoutes extends BaseRouteHandler {
    * Get paginated user prompts
    */
   private handleGetPrompts = this.wrapHandler((req: Request, res: Response): void => {
+    const { offset, limit, project, keywords, logic } = this.parsePaginationParams(req);
+    
+    if (keywords && keywords.length > 0) {
+      // 关键字搜索用户对话
+      const store = this.dbManager.getSessionStore();
+      const result = this.paginateData(
+        store.searchUserPromptsWithKeywords.bind(store),
+        offset,
+        limit,
+        keywords,
+        logic,
+        project
+      );
+      res.json(result);
+    } else {
+      // 基本查询
+      const result = this.paginationHelper.getPrompts(offset, limit, project);
+      res.json(result);
+    }
+  });
+
+  /**
+   * 统一搜索用户对话和AI回复
+   * GET /api/search-conversations
+   * 参数: keywords, logic, project, conversation_type, limit
+   */
+  private handleSearchConversations = this.wrapHandler((req: Request, res: Response): void => {
+    const { offset, limit, project, keywords, logic, conversationType } = this.parsePaginationParams(req);
+    const store = this.dbManager.getSessionStore();
+    
+    const results = {
+      user_prompts: [],
+      ai_responses: []
+    };
+    
+    // 搜索用户对话
+    if (conversationType === 'user' || conversationType === 'both') {
+      if (keywords && keywords.length > 0) {
+        const userResults = store.searchUserPromptsWithKeywords(keywords, logic, project, limit);
+        results.user_prompts = userResults.slice(offset, offset + limit);
+      } else {
+        const userResults = store.getUserPrompts(project, limit);
+        results.user_prompts = userResults.slice(offset, offset + limit);
+      }
+    }
+    
+    // 搜索AI回复
+    if (conversationType === 'ai' || conversationType === 'both') {
+      if (keywords && keywords.length > 0) {
+        const aiResults = store.getAiResponsesWithKeywords(keywords, logic, project, limit);
+        results.ai_responses = aiResults.slice(offset, offset + limit);
+      } else {
+        const aiResults = store.getAllRecentAiResponses(limit);
+        results.ai_responses = aiResults.slice(offset, offset + limit);
+      }
+    }
+    
+    res.json({
+      items: results,
+      hasMore: (results.user_prompts.length + results.ai_responses.length) >= limit,
+      total: results.user_prompts.length + results.ai_responses.length
+    });
+  });
+
+  /**
+   * Get paginated AI responses with keyword filtering support
+   */
+  private handleGetAiResponses = this.wrapHandler((req: Request, res: Response): void => {
+    const { offset, limit, project, keywords, logic } = this.parsePaginationParams(req);
+    const store = this.dbManager.getSessionStore();
+    
+    // If keywords provided, use enhanced filtering method
+    if (keywords && keywords.length > 0) {
+      const result = store.getAiResponsesWithKeywords(keywords, logic, project, offset, limit);
+      res.json(result);
+    } else {
+      // Fall back to regular pagination for backward compatibility
+      const result = this.paginateData(
+        store.getAllRecentAiResponses.bind(store),
+        offset,
+        limit,
+        project
+      );
+      res.json(result);
+    }
+  });
+
+  /**
+   * Get paginated tool executions
+   */
+  private handleGetToolExecutions = this.wrapHandler((req: Request, res: Response): void => {
     const { offset, limit, project } = this.parsePaginationParams(req);
-    const result = this.paginationHelper.getPrompts(offset, limit, project);
+    const store = this.dbManager.getSessionStore();
+    
+    const result = this.paginateData(
+      store.getAllRecentToolExecutions.bind(store),
+      offset,
+      limit,
+      project
+    );
     res.json(result);
   });
+
+  /**
+   * Paginate array data
+   */
+  private paginateData<T>(
+    dataFn: (limit: number) => T[],
+    offset: number,
+    limit: number,
+    project?: string
+  ): { items: T[]; hasMore: boolean; total?: number } {
+    // Get one extra item to check if there are more
+    const allData = dataFn(limit + 1);
+    
+    // Filter by project if specified
+    const filteredData = project 
+      ? allData.filter((item: any) => item.project === project)
+      : allData;
+
+    // Apply pagination
+    const paginatedData = filteredData.slice(offset, offset + limit);
+    const hasMore = filteredData.length > offset + limit;
+
+    return {
+      items: paginatedData,
+      hasMore,
+      total: filteredData.length
+    };
+  }
 
   /**
    * Get observation by ID
@@ -282,12 +413,35 @@ export class DataRoutes extends BaseRouteHandler {
   /**
    * Parse pagination parameters from request query
    */
-  private parsePaginationParams(req: Request): { offset: number; limit: number; project?: string } {
+  private parsePaginationParams(req: Request): { 
+    offset: number; 
+    limit: number; 
+    project?: string;
+    keywords?: string[];
+    logic?: 'AND' | 'OR';
+    conversationType?: 'user' | 'ai' | 'both';
+  } {
     const offset = parseInt(req.query.offset as string, 10) || 0;
     const limit = Math.min(parseInt(req.query.limit as string, 10) || 20, 100); // Max 100
     const project = req.query.project as string | undefined;
+    
+    // Parse keywords (comma-separated) into array
+    const keywordsParam = req.query.keywords as string | undefined;
+    const keywords = keywordsParam 
+      ? keywordsParam.split(',').map(k => k.trim()).filter(k => k.length > 0)
+      : undefined;
+    
+    // Parse logic parameter (AND/OR)
+    const logicParam = (req.query.logic as string | undefined)?.toUpperCase();
+    const logic = (logicParam === 'OR' ? 'OR' : 'AND') as 'AND' | 'OR';
+    
+    // 解析对话类型参数
+    const conversationTypeParam = (req.query.conversation_type as string | undefined)?.toLowerCase();
+    const conversationType = (['user', 'ai', 'both'].includes(conversationTypeParam || '')) 
+      ? conversationTypeParam as 'user' | 'ai' | 'both'
+      : 'both';
 
-    return { offset, limit, project };
+    return { offset, limit, project, keywords, logic, conversationType };
   }
 
   /**

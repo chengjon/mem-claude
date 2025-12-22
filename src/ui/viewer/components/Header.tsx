@@ -8,6 +8,10 @@ interface HeaderProps {
   projects: string[];
   currentFilter: string;
   onFilterChange: (filter: string) => void;
+  keywords?: string[];
+  logic?: 'AND' | 'OR';
+  onKeywordsChange: (keywords: string[]) => void;
+  onLogicChange: (logic: 'AND' | 'OR') => void;
   isProcessing: boolean;
   queueDepth: number;
   themePreference: ThemePreference;
@@ -20,6 +24,10 @@ export function Header({
   projects,
   currentFilter,
   onFilterChange,
+  keywords = [],
+  logic = 'AND',
+  onKeywordsChange,
+  onLogicChange,
   isProcessing,
   queueDepth,
   themePreference,
@@ -81,6 +89,61 @@ export function Header({
             <option key={project} value={project}>{project}</option>
           ))}
         </select>
+        
+        {/* Keyword Search */}
+        <div className="keyword-search">
+          <input
+            type="text"
+            placeholder="搜索AI回复关键字..."
+            value={keywords.join(', ')}
+            onChange={e => {
+              const keywordStr = e.target.value;
+              const keywordArray = keywordStr
+                .split(',')
+                .map(k => k.trim())
+                .filter(k => k.length > 0);
+              onKeywordsChange(keywordArray);
+            }}
+            style={{
+              padding: '4px 8px',
+              border: '1px solid #ccc',
+              borderRadius: '4px',
+              fontSize: '12px',
+              width: '150px',
+              marginRight: '4px'
+            }}
+          />
+          <select
+            value={logic}
+            onChange={e => onLogicChange(e.target.value as 'AND' | 'OR')}
+            style={{
+              padding: '4px 8px',
+              border: '1px solid #ccc',
+              borderRadius: '4px',
+              fontSize: '12px',
+              marginRight: '4px'
+            }}
+          >
+            <option value="AND">AND</option>
+            <option value="OR">OR</option>
+          </select>
+          {keywords.length > 0 && (
+            <button
+              onClick={() => onKeywordsChange([])}
+              style={{
+                padding: '4px 8px',
+                border: '1px solid #ccc',
+                borderRadius: '4px',
+                fontSize: '12px',
+                background: '#f5f5f5',
+                cursor: 'pointer'
+              }}
+              title="清除关键字"
+            >
+              ×
+            </button>
+          )}
+        </div>
         <ThemeToggle
           preference={themePreference}
           onThemeChange={onThemeChange}

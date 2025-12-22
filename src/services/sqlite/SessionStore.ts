@@ -41,6 +41,7 @@ export class SessionStore {
     this.createUserPromptsTable();
     this.ensureDiscoveryTokensColumn();
     this.createPendingMessagesTable();
+    this.createAiResponsesAndToolExecutionsTables();
   }
 
   /**
@@ -423,6 +424,323 @@ export class SessionStore {
   }
 
   /**
+   * Save AI response to database
+   */
+  saveAiResponse(response: {
+    claude_session_id: string;
+    sdk_session_id: string | null;
+    project: string;
+    prompt_number: number;
+    response_text: string;
+    response_type: 'assistant' | 'tool_result' | 'error';
+    tool_name: string | null;
+    tool_input: string | null;
+    tool_output: string | null;
+    created_at: string;
+    created_at_epoch: number;
+  }): number {
+    try {
+      const stmt = this.db.prepare(`
+        INSERT INTO ai_responses (
+          claude_session_id, sdk_session_id, project, prompt_number,
+          response_text, response_type, tool_name, tool_input, tool_output,
+          created_at, created_at_epoch
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+
+      const result = stmt.run(
+        response.claude_session_id,
+        response.sdk_session_id,
+        response.project,
+        response.prompt_number,
+        response.response_text,
+        response.response_type,
+        response.tool_name,
+        response.tool_input,
+        response.tool_output,
+        response.created_at,
+        response.created_at_epoch
+      );
+
+      const aiResponseId = Number(result.lastInsertRowid);
+      logger.debug('DB', 'AI response saved', { aiResponseId, responseType: response.response_type });
+      return aiResponseId;
+    } catch (error) {
+      logger.error('DB', 'Failed to save AI response', { responseType: response.response_type }, error as Error);
+      throw error;
+    }
+  }
+
+  /**
+   * Save tool execution details to database
+   */
+  saveToolExecution(execution: {
+    ai_response_id: number | null;
+    claude_session_id: string;
+    sdk_session_id: string | null;
+    project: string;
+    prompt_number: number;
+    tool_name: string;
+    tool_input: string | null;
+    tool_output: string | null;
+    tool_duration_ms: number | null;
+    files_created: string | null;
+    files_modified: string | null;
+    files_read: string | null;
+    files_deleted: string | null;
+    error_message: string | null;
+    success: boolean;
+    created_at: string;
+    created_at_epoch: number;
+  }): number {
+    try {
+      const stmt = this.db.prepare(`
+        INSERT INTO tool_executions (
+          ai_response_id, claude_session_id, sdk_session_id, project, prompt_number,
+          tool_name, tool_input, tool_output, tool_duration_ms,
+          files_created, files_modified, files_read, files_deleted,
+          error_message, success, created_at, created_at_epoch
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+
+      const result = stmt.run(
+        execution.ai_response_id,
+        execution.claude_session_id,
+        execution.sdk_session_id,
+        execution.project,
+        execution.prompt_number,
+        execution.tool_name,
+        execution.tool_input,
+        execution.tool_output,
+        execution.tool_duration_ms,
+        execution.files_created,
+        execution.files_modified,
+        execution.files_read,
+        execution.files_deleted,
+        execution.error_message,
+        execution.success ? 1 : 0,
+        execution.created_at,
+        execution.created_at_epoch
+      );
+
+      const toolExecutionId = Number(result.lastInsertRowid);
+      logger.debug('DB', 'Tool execution saved', { toolExecutionId, toolName: execution.tool_name, success: execution.success });
+      return toolExecutionId;
+    } catch (error) {
+      logger.error('DB', 'Failed to save tool execution', { toolName: execution.tool_name }, error as Error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get recent AI responses for a project
+   */
+  getRecentAiResponses(project: string, limit: number = 20): Array<{
+    id: number;
+    response_text: string;
+    response_type: string;
+    tool_name: string | null;
+    prompt_number: number | null;
+    created_at: string;
+  }> {
+    const stmt = this.db.prepare(`
+      SELECT id, response_text, response_type, tool_name, prompt_number, created_at
+      FROM ai_responses
+      WHERE project = ?
+      ORDER BY created_at_epoch DESC
+      LIMIT ?
+    `);
+
+    return stmt.all(project, limit);
+  }
+
+  /**
+   * Get recent tool executions for a project
+   */
+  getRecentToolExecutions(project: string, limit: number = 50): Array<{
+    id: number;
+    tool_name: string;
+    tool_input: string | null;
+    tool_output: string | null;
+    files_created: string | null;
+    files_modified: string | null;
+    files_read: string | null;
+    files_deleted: string | null;
+    success: boolean;
+    prompt_number: number | null;
+    created_at: string;
+  }> {
+    const stmt = this.db.prepare(`
+      SELECT id, tool_name, tool_input, tool_output,
+             files_created, files_modified, files_read, files_deleted,
+             success, prompt_number, created_at
+      FROM tool_executions
+      WHERE project = ?
+      ORDER BY created_at_epoch DESC
+      LIMIT ?
+    `);
+
+    return stmt.all(project, limit);
+  }
+
+  /**
+   * Get all recent AI responses across all projects (for web UI)
+   */
+  getAllRecentAiResponses(limit: number = 100): Array<{
+    id: number;
+    claude_session_id: string;
+    sdk_session_id: string | null;
+    project: string;
+    prompt_number: number;
+    response_text: string;
+    response_type: string;
+    tool_name: string | null;
+    tool_input: string | null;
+    tool_output: string | null;
+    created_at: string;
+    created_at_epoch: number;
+  }> {
+    const stmt = this.db.prepare(`
+      SELECT id, claude_session_id, sdk_session_id, project, prompt_number,
+             response_text, response_type, tool_name, tool_input, tool_output,
+             created_at, created_at_epoch
+      FROM ai_responses
+      ORDER BY created_at_epoch DESC
+      LIMIT ?
+    `);
+
+    return stmt.all(limit);
+  }
+
+  /**
+   * Get AI responses with keyword filtering (for enhanced UI filtering)
+   * Supports multiple keywords with AND/OR logic using FTS5 full-text search
+   */
+  getAiResponsesWithKeywords(
+    keywords: string[] = [],
+    logic: 'AND' | 'OR' = 'AND',
+    project?: string,
+    offset: number = 0,
+    limit: number = 20
+  ): {
+    items: Array<{
+      id: number;
+      claude_session_id: string;
+      sdk_session_id: string | null;
+      project: string;
+      prompt_number: number;
+      response_text: string;
+      response_type: string;
+      tool_name: string | null;
+      tool_input: string | null;
+      tool_output: string | null;
+      created_at: string;
+      created_at_epoch: number;
+    }>;
+    total: number;
+    hasMore: boolean;
+  } {
+    // If no keywords provided, fall back to regular method
+    if (keywords.length === 0) {
+      const allItems = this.getAllRecentAiResponses(limit + offset + 1);
+      const filteredItems = project 
+        ? allItems.filter(item => item.project === project)
+        : allItems;
+      
+      const paginatedItems = filteredItems.slice(offset, offset + limit);
+      return {
+        items: paginatedItems,
+        total: filteredItems.length,
+        hasMore: filteredItems.length > offset + limit
+      };
+    }
+
+    // Build FTS5 search query
+    const searchQuery = keywords
+      .map(keyword => `"${keyword.replace(/"/g, '""')}"`) // Escape quotes for FTS5
+      .join(` ${logic} `);
+
+    let baseQuery = `
+      SELECT ar.id, ar.claude_session_id, ar.sdk_session_id, ar.project, ar.prompt_number,
+             ar.response_text, ar.response_type, ar.tool_name, ar.tool_input, ar.tool_output,
+             ar.created_at, ar.created_at_epoch,
+             bm25(ai_responses_fts) as rank
+      FROM ai_responses ar
+      JOIN ai_responses_fts ON ar.id = ai_responses_fts.rowid
+      WHERE ai_responses_fts MATCH ?
+    `;
+
+    let countQuery = `
+      SELECT COUNT(*) as total
+      FROM ai_responses ar
+      JOIN ai_responses_fts ON ar.id = ai_responses_fts.rowid
+      WHERE ai_responses_fts MATCH ?
+    `;
+
+    const params: any[] = [searchQuery];
+
+    // Add project filter if specified
+    if (project) {
+      baseQuery += ' AND ar.project = ?';
+      countQuery += ' AND ar.project = ?';
+      params.push(project);
+    }
+
+    // Add ordering and pagination
+    baseQuery += ' ORDER BY rank, ar.created_at_epoch DESC LIMIT ? OFFSET ?';
+    params.push(limit + 1, offset); // Get one extra to check if there are more
+
+    // Execute queries
+    const items = this.db.prepare(baseQuery).all(...params);
+    const totalResult = this.db.prepare(countQuery).get(searchQuery, ...(project ? [project] : [])) as { total: number };
+
+    const hasMore = items.length > limit;
+    const finalItems = hasMore ? items.slice(0, limit) : items;
+
+    return {
+      items: finalItems,
+      total: totalResult.total,
+      hasMore
+    };
+  }
+
+  /**
+   * Get all recent tool executions across all projects (for web UI)
+   */
+  getAllRecentToolExecutions(limit: number = 100): Array<{
+    id: number;
+    ai_response_id: number | null;
+    claude_session_id: string;
+    sdk_session_id: string | null;
+    project: string;
+    prompt_number: number;
+    tool_name: string;
+    tool_input: string | null;
+    tool_output: string | null;
+    tool_duration_ms: number | null;
+    files_created: string | null;
+    files_modified: string | null;
+    files_read: string | null;
+    files_deleted: string | null;
+    error_message: string | null;
+    success: boolean;
+    created_at: string;
+    created_at_epoch: number;
+  }> {
+    const stmt = this.db.prepare(`
+      SELECT id, ai_response_id, claude_session_id, sdk_session_id, project,
+             prompt_number, tool_name, tool_input, tool_output, tool_duration_ms,
+             files_created, files_modified, files_read, files_deleted,
+             error_message, success, created_at, created_at_epoch
+      FROM tool_executions
+      ORDER BY created_at_epoch DESC
+      LIMIT ?
+    `);
+
+    return stmt.all(limit);
+  }
+
+  /**
    * Create user_prompts table with FTS5 support (migration 10)
    */
   private createUserPromptsTable(): void {
@@ -597,6 +915,170 @@ export class SessionStore {
       console.log('[SessionStore] pending_messages table created successfully');
     } catch (error: any) {
       console.error('[SessionStore] Pending messages table migration error:', error.message);
+      throw error;
+    }
+  }
+
+  /**
+   * Create ai_responses and tool_executions tables for enhanced content tracking (migration 17)
+   * This migration adds support for:
+   * - AI responses with full conversation context
+   * - Detailed tool execution information including file operations
+   * - Better traceability of AI actions and file modifications
+   */
+  private createAiResponsesAndToolExecutionsTables(): void {
+    try {
+      // Check if migration already applied
+      const applied = this.db.prepare('SELECT version FROM schema_versions WHERE version = ?').get(17) as SchemaVersion | undefined;
+      if (applied) return;
+
+      // Check if tables already exist
+      const aiResponsesExists = this.db.query("SELECT name FROM sqlite_master WHERE type='table' AND name='ai_responses'").all() as TableNameRow[];
+      const toolExecutionsExists = this.db.query("SELECT name FROM sqlite_master WHERE type='table' AND name='tool_executions'").all() as TableNameRow[];
+
+      if (aiResponsesExists.length > 0 && toolExecutionsExists.length > 0) {
+        this.db.prepare('INSERT OR IGNORE INTO schema_versions (version, applied_at) VALUES (?, ?)').run(17, new Date().toISOString());
+        return;
+      }
+
+      console.log('[SessionStore] Creating ai_responses and tool_executions tables...');
+
+      // Begin transaction
+      this.db.run('BEGIN TRANSACTION');
+
+      try {
+        // Create ai_responses table
+        this.db.run(`
+          CREATE TABLE IF NOT EXISTS ai_responses (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            claude_session_id TEXT NOT NULL,
+            sdk_session_id TEXT,
+            project TEXT NOT NULL,
+            prompt_number INTEGER NOT NULL,
+            response_text TEXT NOT NULL,
+            response_type TEXT DEFAULT 'assistant' CHECK(response_type IN ('assistant', 'tool_result', 'error')),
+            tool_name TEXT,
+            tool_input TEXT,
+            tool_output TEXT,
+            created_at TEXT NOT NULL,
+            created_at_epoch INTEGER NOT NULL,
+            FOREIGN KEY (claude_session_id) REFERENCES sdk_sessions(claude_session_id) ON DELETE CASCADE
+          )
+        `);
+
+        // Create tool_executions table for detailed tool information
+        this.db.run(`
+          CREATE TABLE IF NOT EXISTS tool_executions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ai_response_id INTEGER,
+            claude_session_id TEXT NOT NULL,
+            sdk_session_id TEXT,
+            project TEXT NOT NULL,
+            prompt_number INTEGER NOT NULL,
+            tool_name TEXT NOT NULL,
+            tool_input TEXT,
+            tool_output TEXT,
+            tool_duration_ms INTEGER,
+            files_created TEXT,
+            files_modified TEXT,
+            files_read TEXT,
+            files_deleted TEXT,
+            error_message TEXT,
+            success BOOLEAN DEFAULT TRUE,
+            created_at TEXT NOT NULL,
+            created_at_epoch INTEGER NOT NULL,
+            FOREIGN KEY (ai_response_id) REFERENCES ai_responses(id) ON DELETE CASCADE,
+            FOREIGN KEY (claude_session_id) REFERENCES sdk_sessions(claude_session_id) ON DELETE CASCADE
+          )
+        `);
+
+        // Create indexes for performance
+        this.db.run('CREATE INDEX IF NOT EXISTS idx_ai_responses_claude_session ON ai_responses(claude_session_id)');
+        this.db.run('CREATE INDEX IF NOT EXISTS idx_ai_responses_sdk_session ON ai_responses(sdk_session_id)');
+        this.db.run('CREATE INDEX IF NOT EXISTS idx_ai_responses_project ON ai_responses(project)');
+        this.db.run('CREATE INDEX IF NOT EXISTS idx_ai_responses_prompt_number ON ai_responses(prompt_number)');
+        this.db.run('CREATE INDEX IF NOT EXISTS idx_ai_responses_created ON ai_responses(created_at_epoch DESC)');
+
+        this.db.run('CREATE INDEX IF NOT EXISTS idx_tool_executions_ai_response ON tool_executions(ai_response_id)');
+        this.db.run('CREATE INDEX IF NOT EXISTS idx_tool_executions_claude_session ON tool_executions(claude_session_id)');
+        this.db.run('CREATE INDEX IF NOT EXISTS idx_tool_executions_sdk_session ON tool_executions(sdk_session_id)');
+        this.db.run('CREATE INDEX IF NOT EXISTS idx_tool_executions_project ON tool_executions(project)');
+        this.db.run('CREATE INDEX IF NOT EXISTS idx_tool_executions_tool_name ON tool_executions(tool_name)');
+        this.db.run('CREATE INDEX IF NOT EXISTS idx_tool_executions_created ON tool_executions(created_at_epoch DESC)');
+        this.db.run('CREATE INDEX IF NOT EXISTS idx_tool_executions_success ON tool_executions(success)');
+
+        // Create FTS5 virtual tables for search
+        this.db.run(`
+          CREATE VIRTUAL TABLE IF NOT EXISTS ai_responses_fts USING fts5(
+            response_text,
+            content='ai_responses',
+            content_rowid='id'
+          )
+        `);
+
+        this.db.run(`
+          CREATE VIRTUAL TABLE IF NOT EXISTS tool_executions_fts USING fts5(
+            tool_input,
+            tool_output,
+            error_message,
+            content='tool_executions',
+            content_rowid='id'
+          )
+        `);
+
+        // Create triggers to sync FTS5 tables
+        this.db.run(`
+          CREATE TRIGGER IF NOT EXISTS ai_responses_ai AFTER INSERT ON ai_responses BEGIN
+            INSERT INTO ai_responses_fts(rowid, response_text)
+            VALUES (new.id, new.response_text);
+          END;
+
+          CREATE TRIGGER IF NOT EXISTS ai_responses_ad AFTER DELETE ON ai_responses BEGIN
+            INSERT INTO ai_responses_fts(ai_responses_fts, rowid, response_text)
+            VALUES('delete', old.id, old.response_text);
+          END;
+
+          CREATE TRIGGER IF NOT EXISTS ai_responses_au AFTER UPDATE ON ai_responses BEGIN
+            INSERT INTO ai_responses_fts(ai_responses_fts, rowid, response_text)
+            VALUES('delete', old.id, old.response_text);
+            INSERT INTO ai_responses_fts(rowid, response_text)
+            VALUES (new.id, new.response_text);
+          END;
+        `);
+
+        this.db.run(`
+          CREATE TRIGGER IF NOT EXISTS tool_executions_ai AFTER INSERT ON tool_executions BEGIN
+            INSERT INTO tool_executions_fts(rowid, tool_input, tool_output, error_message)
+            VALUES (new.id, new.tool_input, new.tool_output, new.error_message);
+          END;
+
+          CREATE TRIGGER IF NOT EXISTS tool_executions_ad AFTER DELETE ON tool_executions BEGIN
+            INSERT INTO tool_executions_fts(tool_executions_fts, rowid, tool_input, tool_output, error_message)
+            VALUES('delete', old.id, old.tool_input, old.tool_output, old.error_message);
+          END;
+
+          CREATE TRIGGER IF NOT EXISTS tool_executions_au AFTER UPDATE ON tool_executions BEGIN
+            INSERT INTO tool_executions_fts(tool_executions_fts, rowid, tool_input, tool_output, error_message)
+            VALUES('delete', old.id, old.tool_input, old.tool_output, old.error_message);
+            INSERT INTO tool_executions_fts(rowid, tool_input, tool_output, error_message)
+            VALUES (new.id, new.tool_input, new.tool_output, new.error_message);
+          END;
+        `);
+
+        // Commit transaction
+        this.db.run('COMMIT');
+
+        // Record migration
+        this.db.prepare('INSERT OR IGNORE INTO schema_versions (version, applied_at) VALUES (?, ?)').run(17, new Date().toISOString());
+
+        console.log('[SessionStore] ai_responses and tool_executions tables created successfully');
+      } catch (error: any) {
+        // Rollback on error
+        this.db.run('ROLLBACK');
+        throw error;
+      }
+    } catch (error: any) {
+      console.error('[SessionStore] AI responses and tool executions migration error:', error.message);
       throw error;
     }
   }

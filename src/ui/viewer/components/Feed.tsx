@@ -1,8 +1,10 @@
 import React, { useMemo, useRef, useEffect } from 'react';
-import { Observation, Summary, UserPrompt, FeedItem } from '../types';
+import { Observation, Summary, UserPrompt, AiResponse, ToolExecution, EnhancedFeedItem } from '../types';
 import { ObservationCard } from './ObservationCard';
 import { SummaryCard } from './SummaryCard';
 import { PromptCard } from './PromptCard';
+import { AiResponseCard } from './AiResponseCard';
+import { ToolExecutionCard } from './ToolExecutionCard';
 import { ScrollToTop } from './ScrollToTop';
 import { UI } from '../constants/ui';
 
@@ -10,12 +12,14 @@ interface FeedProps {
   observations: Observation[];
   summaries: Summary[];
   prompts: UserPrompt[];
+  aiResponses: AiResponse[];
+  toolExecutions: ToolExecution[];
   onLoadMore: () => void;
   isLoading: boolean;
   hasMore: boolean;
 }
 
-export function Feed({ observations, summaries, prompts, onLoadMore, isLoading, hasMore }: FeedProps) {
+export function Feed({ observations, summaries, prompts, aiResponses, toolExecutions, onLoadMore, isLoading, hasMore }: FeedProps) {
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const feedRef = useRef<HTMLDivElement>(null);
   const onLoadMoreRef = useRef(onLoadMore);
@@ -50,15 +54,17 @@ export function Feed({ observations, summaries, prompts, onLoadMore, isLoading, 
     };
   }, [hasMore, isLoading]);
 
-  const items = useMemo<FeedItem[]>(() => {
+  const items = useMemo<EnhancedFeedItem[]>(() => {
     const combined = [
       ...observations.map(o => ({ ...o, itemType: 'observation' as const })),
       ...summaries.map(s => ({ ...s, itemType: 'summary' as const })),
-      ...prompts.map(p => ({ ...p, itemType: 'prompt' as const }))
+      ...prompts.map(p => ({ ...p, itemType: 'prompt' as const })),
+      ...aiResponses.map(ar => ({ ...ar, itemType: 'ai_response' as const })),
+      ...toolExecutions.map(te => ({ ...te, itemType: 'tool_execution' as const }))
     ];
 
     return combined.sort((a, b) => b.created_at_epoch - a.created_at_epoch);
-  }, [observations, summaries, prompts]);
+  }, [observations, summaries, prompts, aiResponses, toolExecutions]);
 
   return (
     <div className="feed" ref={feedRef}>
@@ -70,9 +76,14 @@ export function Feed({ observations, summaries, prompts, onLoadMore, isLoading, 
             return <ObservationCard key={key} observation={item} />;
           } else if (item.itemType === 'summary') {
             return <SummaryCard key={key} summary={item} />;
-          } else {
+          } else if (item.itemType === 'prompt') {
             return <PromptCard key={key} prompt={item} />;
+          } else if (item.itemType === 'ai_response') {
+            return <AiResponseCard key={key} aiResponse={item} />;
+          } else if (item.itemType === 'tool_execution') {
+            return <ToolExecutionCard key={key} toolExecution={item} />;
           }
+          return null;
         })}
         {items.length === 0 && !isLoading && (
           <div style={{ textAlign: 'center', padding: '40px', color: '#8b949e' }}>
