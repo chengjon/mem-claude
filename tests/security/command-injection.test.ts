@@ -11,7 +11,7 @@ import { existsSync, mkdirSync, writeFileSync, rmSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
 
-const TEST_PLUGIN_PATH = join(homedir(), '.claude', 'plugins', 'marketplaces', 'thedotmack-test');
+const TEST_PLUGIN_PATH = join(homedir(), '.claude', 'plugins', 'marketplaces', 'chengjon-test');
 
 describe('Command Injection Security Tests', () => {
   describe('BranchManager - Branch Name Validation', () => {

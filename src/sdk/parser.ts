@@ -49,7 +49,7 @@ export function parseObservations(text: string, correlationId?: string): ParsedO
     const files_read = extractArrayElements(obsContent, 'files_read', 'file');
     const files_modified = extractArrayElements(obsContent, 'files_modified', 'file');
 
-    // NOTE FROM THEDOTMACK: ALWAYS save observations - never skip. 10/24/2025
+    // NOTE FROM CHENGJON: ALWAYS save observations - never skip. 10/24/2025
     // All fields except type are nullable in schema
     // If type is missing or invalid, use "change" as catch-all fallback
 
@@ -130,7 +130,7 @@ export function parseSummary(text: string, sessionId?: number): ParsedSummary | 
   const next_steps = extractField(summaryContent, 'next_steps');
   const notes = extractField(summaryContent, 'notes'); // Optional
 
-  // NOTE FROM THEDOTMACK: 100% of the time we must SAVE the summary, even if fields are missing. 10/24/2025 
+  // NOTE FROM CHENGJON: 100% of the time we must SAVE the summary, even if fields are missing. 10/24/2025 
   // NEVER DO THIS NONSENSE AGAIN.
 
   // Validate required fields are present (notes is optional)

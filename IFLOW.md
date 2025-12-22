@@ -210,7 +210,7 @@ plugin/
 
 ```bash
 # 克隆和构建
-git clone https://github.com/thedotmack/claude-mem.git
+git clone https://github.com/chengjon/mem-claude.git
 cd claude-mem
 npm install
 npm run build
@@ -235,7 +235,7 @@ npm run build-and-sync        # 构建，同步到市场，重启worker
 **文件位置**:
 - **源码**: `<项目根>/src/`
 - **构建插件**: `<项目根>/plugin/`
-- **安装插件**: `~/.claude/plugins/marketplaces/thedotmack/`
+- **安装插件**: `~/.claude/plugins/marketplaces/chengjon/`
 - **数据库**: `~/.claude-mem/claude-mem.db`
 - **Chroma**: `~/.claude-mem/chroma/`
 
@@ -367,9 +367,9 @@ npm run bug-report
 ## 支持
 
 - **文档**: [docs/](docs/)
-- **问题**: [GitHub Issues](https://github.com/thedotmack/claude-mem/issues)
-- **仓库**: [github.com/thedotmack/claude-mem](https://github.com/thedotmack/claude-mem)
-- **作者**: Alex Newman [@thedotmack](https://github.com/thedotmack)
+- **问题**: [GitHub Issues](https://github.com/chengjon/mem-claude/issues)
+- **仓库**: [github.com/chengjon/mem-claude](https://github.com/chengjon/mem-claude)
+- **作者**: Alex Newman [@chengjon](https://github.com/chengjon)
 
 ---
 

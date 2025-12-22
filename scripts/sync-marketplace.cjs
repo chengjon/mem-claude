@@ -11,8 +11,48 @@ const { existsSync, readFileSync } = require('fs');
 const path = require('path');
 const os = require('os');
 
-const INSTALLED_PATH = path.join(os.homedir(), '.claude', 'plugins', 'marketplaces', 'chengjon');
-const CACHE_BASE_PATH = path.join(os.homedir(), '.claude', 'plugins', 'cache', 'chengjon', 'claude-mem');
+// Get dynamic paths from plugin.json
+function getBuildConfig() {
+  const homeDir = os.homedir();
+  const claudeDir = path.join(homeDir, '.claude');
+  const pluginDir = path.join(claudeDir, 'plugins', 'marketplaces');
+  const cacheDir = path.join(claudeDir, 'plugins', 'cache');
+  
+  let pluginAuthor = 'chengjon'; // fallback to default
+  let pluginVersion = '7.4.5'; // fallback to default
+  
+  try {
+    const pluginJsonPath = path.join(__dirname, '..', 'plugin', '.claude-plugin', 'plugin.json');
+    const pluginJson = JSON.parse(readFileSync(pluginJsonPath, 'utf-8'));
+    pluginVersion = pluginJson.version || pluginVersion;
+    
+    // Handle different author formats
+    if (typeof pluginJson.author === 'string') {
+      pluginAuthor = pluginJson.author;
+    } else if (pluginJson.author && typeof pluginJson.author === 'object' && pluginJson.author.name) {
+      pluginAuthor = pluginJson.author.name;
+    }
+    
+    // Clean author name for path safety
+    pluginAuthor = pluginAuthor.toLowerCase().replace(/[^a-z0-9-]/g, '-');
+  } catch (error) {
+    console.warn('Could not read plugin.json, using defaults');
+  }
+  
+  const installedPath = path.join(pluginDir, pluginAuthor, 'claude-mem');
+  const cacheBasePath = path.join(cacheDir, pluginAuthor, 'claude-mem');
+  
+  return {
+    version: pluginVersion,
+    author: pluginAuthor,
+    installedPath,
+    cacheBasePath
+  };
+}
+
+const config = getBuildConfig();
+const INSTALLED_PATH = config.installedPath;
+const CACHE_BASE_PATH = config.cacheBasePath;
 
 function getCurrentBranch() {
   try {
@@ -58,21 +98,21 @@ function getPluginVersion() {
 }
 
 // Normal rsync for main branch or fresh install
-console.log('Syncing to marketplace...');
+console.log(`Syncing to marketplace (${config.author})...`);
 try {
   execSync(
-    'rsync -av --delete --exclude=.git --exclude=/.mcp.json ./ ~/.claude/plugins/marketplaces/thedotmack/',
+    `rsync -av --delete --exclude=.git --exclude=/.mcp.json ./ "${INSTALLED_PATH}/"`,
     { stdio: 'inherit' }
   );
 
   console.log('Running npm install in marketplace...');
   execSync(
-    'cd ~/.claude/plugins/marketplaces/thedotmack/ && npm install',
+    `cd "${INSTALLED_PATH}" && npm install`,
     { stdio: 'inherit' }
   );
 
   // Sync to cache folder with version
-  const version = getPluginVersion();
+  const version = config.version;
   const CACHE_VERSION_PATH = path.join(CACHE_BASE_PATH, version);
 
   console.log(`Syncing to cache folder (version ${version})...`);

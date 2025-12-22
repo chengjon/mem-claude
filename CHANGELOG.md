@@ -353,7 +353,7 @@ None - fully backward compatible.
 npm install -g claude-mem@7.2.1
 
 # Or reinstall plugin
-claude plugin install thedotmack/claude-mem
+claude plugin install chengjon/mem-claude
 ```
 
 ---
@@ -388,13 +388,13 @@ Added comprehensive bug report tool that streamlines issue reporting with AI ass
 
 From the plugin directory:
 ```bash
-cd ~/.claude/plugins/marketplaces/thedotmack
+cd ~/.claude/plugins/marketplaces/chengjon
 npm run bug-report
 ```
 
 **Plugin Paths:**
-- macOS/Linux: `~/.claude/plugins/marketplaces/thedotmack`
-- Windows: `%USERPROFILE%\.claude\plugins\marketplaces\thedotmack`
+- macOS/Linux: `~/.claude/plugins/marketplaces/chengjon`
+- Windows: `%USERPROFILE%\.claude\plugins\marketplaces\chengjon`
 
 **Options:**
 ```bash
@@ -1501,7 +1501,7 @@ This patch release fixes a critical bug where the PM2 worker process would start
 - **Worker Startup Path Resolution** (`src/shared/worker-utils.ts:61`)  
   Added `cwd: pluginRoot` option to `execSync` when starting PM2
   
-  This ensures the worker always starts from the correct marketplace directory (`~/.claude/plugins/marketplaces/thedotmack/`), regardless of where the hook is invoked from.
+  This ensures the worker always starts from the correct marketplace directory (`~/.claude/plugins/marketplaces/chengjon/`), regardless of where the hook is invoked from.
 
 ### Impact
 
@@ -1510,8 +1510,8 @@ Users will no longer experience issues with the worker starting from the wrong l
 ### Verification
 
 Run `pm2 info claude-mem-worker` to verify:
-- **exec cwd** should be: `/Users/[username]/.claude/plugins/marketplaces/thedotmack`
-- **script path** should be: `/Users/[username]/.claude/plugins/marketplaces/thedotmack/plugin/scripts/worker-service.cjs`
+- **exec cwd** should be: `/Users/[username]/.claude/plugins/marketplaces/chengjon`
+- **script path** should be: `/Users/[username]/.claude/plugins/marketplaces/chengjon/plugin/scripts/worker-service.cjs`
 
 ## [6.0.7] - 2025-11-17
 
@@ -1695,7 +1695,7 @@ This is a major version bump due to significant architectural changes in session
 
 ---
 
-📦 Install via Claude Code: `~/.claude/plugins/marketplaces/thedotmack/`
+📦 Install via Claude Code: `~/.claude/plugins/marketplaces/chengjon/`
 📖 Documentation: [CLAUDE.md](https://github.com/thedotmack/claude-mem/blob/main/CLAUDE.md)
 
 ## [5.5.1] - 2025-11-11
@@ -1996,7 +1996,7 @@ Or restart Claude Code to auto-update.
 ### 📦 Installation
 
 ```bash
-/plugin marketplace add thedotmack/claude-mem
+/plugin marketplace add chengjon/mem-claude
 /plugin install claude-mem
 ```
 
@@ -2522,7 +2522,7 @@ This release should completely resolve installation issues. The smart installer 
 
 Install via Claude Code marketplace:
 ```bash
-/plugin marketplace add https://raw.githubusercontent.com/thedotmack/claude-mem/main/.claude-plugin/marketplace.json
+/plugin marketplace add https://raw.githubusercontent.com/chengjon/mem-claude/main/.claude-plugin/marketplace.json
 /plugin install claude-mem
 ```
 

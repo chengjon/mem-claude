@@ -2,7 +2,7 @@
  * BranchManager: Git branch detection and switching for beta feature toggle
  *
  * Enables users to switch between stable (main) and beta branches via the UI.
- * The installed plugin at ~/.claude/plugins/marketplaces/chengjon/ is a git repo.
+ * The installed plugin at dynamic marketplace path is a git repo.
  */
 
 import { execSync, spawnSync } from 'child_process';
@@ -11,7 +11,34 @@ import { homedir } from 'os';
 import { join } from 'path';
 import { logger } from '../../utils/logger.js';
 
-const INSTALLED_PLUGIN_PATH = join(homedir(), '.claude', 'plugins', 'marketplaces', 'chengjon');
+// Dynamic plugin path based on plugin.json configuration
+let pluginAuthor = 'chengjon'; // fallback to default
+
+try {
+  const pluginJsonPath = join(process.cwd(), 'plugin', '.claude-plugin', 'plugin.json');
+  const pluginJson = JSON.parse(require('fs').readFileSync(pluginJsonPath, 'utf-8'));
+  
+  // Handle different author formats
+  if (typeof pluginJson.author === 'string') {
+    pluginAuthor = pluginJson.author;
+  } else if (pluginJson.author && typeof pluginJson.author === 'object' && pluginJson.author.name) {
+    pluginAuthor = pluginJson.author.name;
+  }
+  
+  // Clean author name for path safety
+  pluginAuthor = pluginAuthor.toLowerCase().replace(/[^a-z0-9-]/g, '-');
+} catch (error) {
+  logger.warn('BRANCH_MANAGER', 'Could not read plugin.json, using default author');
+}
+
+const INSTALLED_PLUGIN_PATH = join(homedir(), '.claude', 'plugins', 'marketplaces', pluginAuthor, 'claude-mem');
+
+/**
+ * Get installed plugin path (for external use)
+ */
+export function getInstalledPluginPath(): string {
+  return INSTALLED_PLUGIN_PATH;
+}
 
 /**
  * Validate branch name to prevent command injection
@@ -302,11 +329,4 @@ export async function pullUpdates(): Promise<SwitchResult> {
       error: `Pull failed: ${(error as Error).message}`
     };
   }
-}
-
-/**
- * Get installed plugin path (for external use)
- */
-export function getInstalledPluginPath(): string {
-  return INSTALLED_PLUGIN_PATH;
 }

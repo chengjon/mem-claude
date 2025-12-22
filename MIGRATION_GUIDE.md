@@ -1,6 +1,6 @@
 # Claude-Mem 迁移指南
 
-## 🚀 从 thedotmack/claude-mem 迁移到 chengjon/mem-claude
+## 🚀 迁移到 chengjon/mem-claude
 
 ### 变更概述
 
@@ -8,7 +8,7 @@
 
 **旧安装方式**：
 ```bash
-/plugin marketplace add thedotmack/claude-mem
+/plugin marketplace add chengjon/mem-claude
 ```
 
 **新安装方式**：
@@ -18,7 +18,7 @@
 
 ### 📍 安装路径变更
 
-- **旧路径**: `~/.claude/plugins/marketplaces/thedotmack/`
+- **旧路径**: `~/.claude/plugins/marketplaces/chengjon/`
 - **新路径**: `~/.claude/plugins/marketplaces/chengjon/`
 
 ### 🔄 迁移步骤
@@ -53,7 +53,7 @@
 
 ```bash
 # 备份旧插件
-cp -r ~/.claude/plugins/marketplaces/thedotmack ~/.claude/plugins/marketplaces/thedotmack-backup
+cp -r ~/.claude/plugins/marketplaces/chengjon ~/.claude/plugins/marketplaces/chengjon-backup
 
 # 卸载旧插件
 /plugin uninstall claude-mem
@@ -69,7 +69,7 @@ cp -r ~/.claude/plugins/marketplaces/thedotmack ~/.claude/plugins/marketplaces/t
 A: 检查数据目录是否存在：`ls ~/.claude-mem/`
 如果数据丢失，可以从备份恢复：
 ```bash
-cp ~/.claude/plugins/marketplaces/thedotmack-backup/plugin/.install-version ~/.claude-mem/
+cp ~/.claude/plugins/marketplaces/chengjon-backup/plugin/.install-version ~/.claude-mem/
 ```
 
 #### Q: 插件安装失败？

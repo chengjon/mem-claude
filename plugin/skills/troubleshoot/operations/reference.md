@@ -6,7 +6,7 @@ Essential commands for troubleshooting claude-mem.
 
 ```bash
 # Check worker status
-cd ~/.claude/plugins/marketplaces/thedotmack/
+cd ~/.claude/plugins/marketplaces/chengjon/
 npm run worker:status
 
 # Start worker
@@ -99,7 +99,7 @@ echo '{"CLAUDE_MEM_WORKER_PORT":"37778"}' > ~/.claude-mem/settings.json
 
 ```bash
 # Navigate to plugin directory
-cd ~/.claude/plugins/marketplaces/thedotmack/
+cd ~/.claude/plugins/marketplaces/chengjon/
 
 # Check plugin version
 grep '"version"' package.json
@@ -146,7 +146,7 @@ tail -f ~/.claude-mem/logs/worker-$(date +%Y-%m-%d).log
 
 ```bash
 # Plugin directory
-~/.claude/plugins/marketplaces/thedotmack/
+~/.claude/plugins/marketplaces/chengjon/
 
 # Database
 ~/.claude-mem/claude-mem.db
