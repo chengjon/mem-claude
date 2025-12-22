@@ -28,7 +28,7 @@ import {
 import { getProjectName } from '../utils/project-name.js';
 
 // Version marker path - use homedir-based path that works in both CJS and ESM contexts
-const VERSION_MARKER_PATH = path.join(homedir(), '.claude', 'plugins', 'marketplaces', 'thedotmack', 'plugin', '.install-version');
+const VERSION_MARKER_PATH = path.join(homedir(), '.claude', 'plugins', 'marketplaces', 'chengjon', 'plugin', '.install-version');
 
 interface ContextConfig {
   // Display counts

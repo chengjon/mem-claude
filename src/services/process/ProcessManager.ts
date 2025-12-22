@@ -9,7 +9,7 @@ import { SettingsDefaultsManager } from '../../shared/SettingsDefaultsManager.js
 
 const PID_FILE = join(DATA_DIR, 'worker.pid');
 const LOG_DIR = join(DATA_DIR, 'logs');
-const MARKETPLACE_ROOT = join(homedir(), '.claude', 'plugins', 'marketplaces', 'thedotmack');
+const MARKETPLACE_ROOT = join(homedir(), '.claude', 'plugins', 'marketplaces', 'chengjon');
 
 interface PidInfo {
   pid: number;
