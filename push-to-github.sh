@@ -4,7 +4,7 @@
 # This script pushes the committed changes to GitHub
 
 echo "🚀 Pushing Claude-Mem changes to GitHub..."
-echo "Repository: https://github.com/thedotmack/claude-mem.git"
+echo "Repository: https://github.com/chengjon/mem-claude.git"
 echo ""
 
 # Check if we're in the right directory
@@ -37,8 +37,8 @@ if [[ $confirm =~ ^[Yy]$ ]]; then
     if [ $? -eq 0 ]; then
         echo ""
         echo "✅ Successfully pushed to GitHub!"
-        echo "🌐 View repository: https://github.com/thedotmack/claude-mem"
-        echo "📋 Latest commit: https://github.com/thedotmack/claude-mem/commit/$(git rev-parse HEAD)"
+        echo "🌐 View repository: https://github.com/chengjon/mem-claude"
+        echo "📋 Latest commit: https://github.com/chengjon/mem-claude/commit/$(git rev-parse HEAD)"
     else
         echo ""
         echo "❌ Failed to push to GitHub"
@@ -47,7 +47,7 @@ if [[ $confirm =~ ^[Yy]$ ]]; then
         echo "1. Check your internet connection"
         echo "2. Verify GitHub credentials: git remote -v"
         echo "3. Ensure you have write access to the repository"
-        echo "4. Try: git remote set-url origin https://<username>:<token>@github.com/thedotmack/claude-mem.git"
+        echo "4. Try: git remote set-url origin https://<username>:<token>@github.com/chengjon/mem-claude.git"
     fi
 else
     echo ""
@@ -60,7 +60,7 @@ git branch -vv
 
 echo ""
 echo "🎯 Next steps:"
-echo "1. Visit https://github.com/thedotmack/claude-mem to view changes"
+echo "1. Visit https://github.com/chengjon/mem-claude to view changes"
 echo "2. Create a pull request if needed"
 echo "3. Update release notes in CHANGELOG.md"
 echo ""
