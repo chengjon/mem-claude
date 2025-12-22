@@ -1,599 +1,436 @@
-<h1 align="center">
-  <br>
-  <a href="https://github.com/chengjon/mem-claude">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/chengjon/mem-claude/main/docs/public/claude-mem-logo-for-dark-mode.webp">
-      <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/chengjon/mem-claude/main/docs/public/claude-mem-logo-for-light-mode.webp">
-      <img src="https://raw.githubusercontent.com/chengjon/mem-claude/main/docs/public/claude-mem-logo-for-light-mode.webp" alt="Claude-Mem" width="400">
-    </picture>
-  </a>
-  <br>
-</h1>
+# Claude-Mem 智能对话记忆系统
 
-<h4 align="center">Persistent memory compression system built for <a href="https://claude.com/claude-code" target="_blank">Claude Code</a>.</h4>
+一个专为Claude Code设计的持久化记忆压缩系统，能够自动记录、分析和检索AI对话，支持关键词搜索、项目管理和AI集成。
 
 <p align="center">
-  <a href="LICENSE">
-    <img src="https://img.shields.io/badge/License-AGPL%203.0-blue.svg" alt="License">
-  </a>
-  <a href="package.json">
-    <img src="https://img.shields.io/badge/version-7.4.6-green.svg" alt="Version">
-  </a>
-  <a href="package.json">
-    <img src="https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg" alt="Node">
-  </a>
-  <a href="https://github.com/thedotmack/awesome-claude-code">
-    <img src="https://awesome.re/mentioned-badge.svg" alt="Mentioned in Awesome Claude Code">
-  </a>
-</p>
-
-<p align="center">
-  <a href="https://trendshift.io/repositories/15496" target="_blank">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/chengjon/mem-claude/main/docs/public/trendshift-badge-dark.svg">
-      <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/chengjon/mem-claude/main/docs/public/trendshift-badge.svg">
-      <img src="https://raw.githubusercontent.com/chengjon/mem-claude/main/docs/public/trendshift-badge.svg" alt="chengjon/mem-claude | Trendshift" width="250" height="55"/>
-    </picture>
-  </a>
-</p>
-
-<br>
-
-<p align="center">
-  <a href="https://github.com/chengjon/mem-claude">
-    <picture>
-      <img src="https://raw.githubusercontent.com/chengjon/mem-claude/main/docs/public/cm-preview.gif" alt="Claude-Mem Preview" width="800">
-    </picture>
-  </a>
-</p>
-
-<p align="center">
-  <a href="#quick-start">Quick Start</a> •
-  <a href="#how-it-works">How It Works</a> •
-  <a href="#mcp-search-tools">Search Tools</a> •
-  <a href="#documentation">Documentation</a> •
-  <a href="#configuration">Configuration</a> •
-  <a href="#troubleshooting">Troubleshooting</a> •
-  <a href="#license">License</a>
-</p>
-
-<p align="center">
-  Claude-Mem seamlessly preserves context across sessions by automatically capturing tool usage observations, generating semantic summaries, and making them available to future sessions. This enables Claude to maintain continuity of knowledge about projects even after sessions end or reconnect.
+  <img src="https://img.shields.io/badge/version-7.4.6-green.svg" alt="Version">
+  <img src="https://img.shields.io/badge/License-AGPL%203.0-blue.svg" alt="License">
+  <img src="https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg" alt="Node">
+  <img src="https://img.shields.io/badge/language-TypeScript-orange.svg" alt="Language">
 </p>
 
 ---
 
-## Quick Start
+## 🚀 快速开始
 
-Start a new Claude Code session in the terminal and enter the following commands:
-
-```
-> /plugin marketplace add chengjon/mem-claude
-
-> /plugin install claude-mem
-```
-
-Restart Claude Code. Context from previous sessions will automatically appear in new sessions.
-
-**Key Features:**
-
-- 🧠 **Persistent Memory** - Context survives across sessions
-- 📊 **Progressive Disclosure** - Layered memory retrieval with token cost visibility
-- 🔍 **Skill-Based Search** - Query your project history with mem-search skill
-- 🖥️ **Web Viewer UI** - Real-time memory stream at http://localhost:37777
-- 💻 **Claude Desktop Skill** - Search memory from Claude Desktop conversations
-- 🔒 **Privacy Control** - Use `<private>` tags to exclude sensitive content from storage
-- ⚙️ **Context Configuration** - Fine-grained control over what context gets injected
-- 🤖 **Automatic Operation** - No manual intervention required
-- 🔗 **Citations** - Reference past observations with IDs (access via http://localhost:37777/api/observation/{id} or view all in the web viewer at http://localhost:37777)
-- 🧪 **Beta Channel** - Try experimental features like Endless Mode via version switching
-
----
-
-## Documentation
-
-📚 **[View Full Documentation](docs/)** - Browse markdown docs on GitHub
-
-💻 **Local Preview**: Run Mintlify docs locally:
+### 安装命令
 
 ```bash
-cd docs/public
-npx mintlify dev
+/plugin marketplace add chengjon/mem-claude
+/plugin install claude-mem
 ```
 
-### Getting Started
+重启Claude Code，上下文将自动从之前的会话中加载。
 
-- **[Installation Guide](https://docs.claude-mem.ai/installation)** - Quick start & advanced installation
-- **[Usage Guide](https://docs.claude-mem.ai/usage/getting-started)** - How Claude-Mem works automatically
-- **[Search Tools](https://docs.claude-mem.ai/usage/search-tools)** - Query your project history with natural language
-- **[Beta Features](https://docs.claude-mem.ai/beta-features)** - Try experimental features like Endless Mode
+### 核心特性
 
-### Best Practices
-
-- **[Context Engineering](https://docs.claude-mem.ai/context-engineering)** - AI agent context optimization principles
-- **[Progressive Disclosure](https://docs.claude-mem.ai/progressive-disclosure)** - Philosophy behind Claude-Mem's context priming strategy
-
-### Architecture
-
-- **[Overview](https://docs.claude-mem.ai/architecture/overview)** - System components & data flow
-- **[Architecture Evolution](https://docs.claude-mem.ai/architecture-evolution)** - The journey from v3 to v5
-- **[Hooks Architecture](https://docs.claude-mem.ai/hooks-architecture)** - How Claude-Mem uses lifecycle hooks
-- **[Hooks Reference](https://docs.claude-mem.ai/architecture/hooks)** - 7 hook scripts explained
-- **[Worker Service](https://docs.claude-mem.ai/architecture/worker-service)** - HTTP API & Bun management
-- **[Database](https://docs.claude-mem.ai/architecture/database)** - SQLite schema & FTS5 search
-- **[Search Architecture](https://docs.claude-mem.ai/architecture/search-architecture)** - Hybrid search with Chroma vector database
-
-### Configuration & Development
-
-- **[Configuration](https://docs.claude-mem.ai/configuration)** - Environment variables & settings
-- **[Development](https://docs.claude-mem.ai/development)** - Building, testing, contributing
-- **[Troubleshooting](https://docs.claude-mem.ai/troubleshooting)** - Common issues & solutions
+- 🧠 **持久化记忆** - 跨会话上下文自动加载
+- 🔍 **关键词搜索** - 支持AND/OR逻辑的全文搜索
+- 🤖 **AI集成** - 完整的外部AI系统集成方案
+- 📊 **对话分类** - 区分用户对话和AI回复
+- 🛠️ **工具跟踪** - 完整的工具执行历史记录
+- 💻 **Web界面** - 实时查看对话历史 http://localhost:37777
+- 🔒 **隐私控制** - 支持`<private>`标签排除敏感内容
+- ⚙️ **自动操作** - 无需手动干预，全自动记录和分析
 
 ---
 
-## How It Works
+## 🎯 主要功能
 
+### 1. 智能记忆管理
+
+Claude-Mem自动捕获工具使用观察结果，生成语义摘要，并在新会话中自动加载相关上下文。
+
+**工作流程：**
 ```
-┌─────────────────────────────────────────────────────────────┐
-│ Session Start → Inject recent observations as context      │
-└─────────────────────────────────────────────────────────────┘
-                            ↓
-┌─────────────────────────────────────────────────────────────┐
-│ User Prompts → Create session, save user prompts           │
-└─────────────────────────────────────────────────────────────┘
-                            ↓
-┌─────────────────────────────────────────────────────────────┐
-│ Tool Executions → Capture observations (Read, Write, etc.)  │
-└─────────────────────────────────────────────────────────────┘
-                            ↓
-┌─────────────────────────────────────────────────────────────┐
-│ Worker Processes → Extract learnings via Claude Agent SDK   │
-└─────────────────────────────────────────────────────────────┘
-                            ↓
-┌─────────────────────────────────────────────────────────────┐
-│ Session Ends → Generate summary, ready for next session     │
-└─────────────────────────────────────────────────────────────┘
+会话开始 → 自动注入相关上下文
+     ↓
+用户提示 → 创建会话，保存用户对话
+     ↓  
+工具执行 → 捕获观察结果（读取、写入等）
+     ↓
+智能处理 → 通过Claude Agent SDK提取学习内容
+     ↓
+会话结束 → 生成摘要，为下个会话做准备
 ```
 
-**Core Components:**
+### 2. 关键词过滤与搜索
 
-1. **5 Lifecycle Hooks** - SessionStart, UserPromptSubmit, PostToolUse, Stop, SessionEnd (6 hook scripts)
-2. **Smart Install** - Cached dependency checker (pre-hook script, not a lifecycle hook)
-3. **Worker Service** - HTTP API on port 37777 with web viewer UI and 10 search endpoints, managed by Bun
-4. **SQLite Database** - Stores sessions, observations, summaries with FTS5 full-text search
-5. **mem-search Skill** - Natural language queries with progressive disclosure
-6. **Chroma Vector Database** - Hybrid semantic + keyword search for intelligent context retrieval
+**Web界面搜索：**
+- 右上角搜索框输入关键词
+- 支持多个关键词（逗号分隔）
+- 可选择AND/OR逻辑
+- 实时过滤结果
 
-See [Architecture Overview](https://docs.claude-mem.ai/architecture/overview) for details.
-
----
-
-## mem-search Skill
-
-Claude-Mem provides intelligent search through the mem-search skill that auto-invokes when you ask about past work:
-
-**How It Works:**
-- Just ask naturally: *"What did we do last session?"* or *"Did we fix this bug before?"*
-- Claude automatically invokes the mem-search skill to find relevant context
-
-**Available Search Operations:**
-
-1. **Search Observations** - Full-text search across observations
-2. **Search Sessions** - Full-text search across session summaries
-3. **Search Prompts** - Search raw user requests
-4. **By Concept** - Find by concept tags (discovery, problem-solution, pattern, etc.)
-5. **By File** - Find observations referencing specific files
-6. **By Type** - Find by type (decision, bugfix, feature, refactor, discovery, change)
-7. **Recent Context** - Get recent session context for a project
-8. **Timeline** - Get unified timeline of context around a specific point in time
-9. **Timeline by Query** - Search for observations and get timeline context around best match
-10. **API Help** - Get search API documentation
-
-**Example Natural Language Queries:**
-
-```
-"What bugs did we fix last session?"
-"How did we implement authentication?"
-"What changes were made to worker-service.ts?"
-"Show me recent work on this project"
-"What was happening when we added the viewer UI?"
-```
-
-See [Search Tools Guide](https://docs.claude-mem.ai/usage/search-tools) for detailed examples.
-
----
-
-## AI Integration Tools
-
-Claude-Mem v7.4.6 introduces comprehensive tools for external AI systems to access and analyze conversation history.
-
-### Database Access Tools
-
-**Python Database Tool** (`claude_mem_db_tool.py`):
+**API搜索：**
 ```bash
-# Search AI responses with keywords
-python claude_mem_db_tool.py search-ai-responses "bug fix" "authentication" --logic AND
+# 搜索AI回复
+curl "http://localhost:37777/api/ai-responses?keywords=bug,error&logic=OR"
 
-# Search user prompts
-python claude_mem_db_tool.py search-user-prompts "implementation" --limit 10
-
-# Get conversation timeline
-python claude_mem_db_tool.py get-conversation-timeline "my-project"
-
-# Export data
-python claude_mem_db_tool.py export-data --format json --output conversations.json
+# 搜索用户对话
+curl "http://localhost:37777/api/search-conversations?keywords=Python&type=user"
 ```
 
-**CLI Search Tool** (`search_conversations.py`):
+### 3. AI集成工具
+
+**Python数据库工具：**
+```python
+from claude_mem_db_tool import ClaudeMemDB
+
+db = ClaudeMemDB()
+
+# 搜索包含特定关键词的AI回复
+bug_conversations = db.search_ai_responses(
+    keywords=["bug", "修复"],
+    logic="AND",
+    limit=50
+)
+
+# 搜索用户对话
+user_questions = db.search_user_prompts(
+    keywords=["如何", "实现"],
+    limit=30
+)
+
+db.close()
+```
+
+**CLI搜索工具：**
 ```bash
-# Search all conversations
-python search_conversations.py --keywords "database" --type ai
+# 搜索所有对话
+python search_conversations.py --keywords "数据库" --logic OR
 
-# Search user conversations only
-python search_conversations.py --keywords "bug" --type user
+# 只搜索AI对话
+python search_conversations.py --keywords "错误" --type ai
 
-# Search with OR logic
-python search_conversations.py --keywords "error crash" --logic OR
+# 导出结果
+python search_conversations.py --keywords "优化" --output results.json
 ```
 
-### AI Integration Examples
-
-**ClaudeMemAIIntegration** class for external AI systems:
+**AI集成示例：**
 ```python
 from ai_integration_examples import ClaudeMemAIIntegration
 
-# Initialize integration
 integration = ClaudeMemAIIntegration()
 
-# Get relevant context for AI assistance
+# 获取相关上下文
 context = integration.get_relevant_context(
-    query="How to fix authentication bugs?",
+    query="如何解决Python数据库连接问题？",
     project="my-project",
     limit=5
 )
 
-# Analyze conversation patterns
+# 分析对话模式
 patterns = integration.analyze_conversation_patterns("my-project")
 
-# Get solution history
+# 获取解决方案历史
 solutions = integration.get_solution_history(
-    problem_type="authentication",
+    problem_type="database",
     project="my-project"
 )
 ```
 
-### Service Management
+### 4. 服务管理
 
-**One-command service management** (`mem.sh`):
+**一键服务管理：**
 ```bash
-# Start service
+# 启动服务
 ./mem.sh start
 
-# Check status
+# 查看状态
 ./mem.sh status
 
-# View logs
+# 查看日志
 ./mem.sh logs
 
-# Restart service
+# 重启服务
 ./mem.sh restart
 
-# Stop service
+# 停止服务
 ./mem.sh stop
 ```
 
-### Enhanced Web UI Features
-
-- **Keyword Filtering**: Search AI responses with AND/OR logic in the web interface
-- **Conversation Differentiation**: Filter between user prompts and AI responses
-- **Tool Execution History**: Complete record of tool usage and outcomes
-- **Real-time Updates**: Live streaming of new conversations and responses
-
-### API Endpoints
-
-Extended API with new endpoints:
-- `GET /api/ai-responses` - Search AI responses with keyword filtering
-- `GET /api/tool-executions` - Get tool execution history
-- `GET /api/search-conversations` - Unified search across all conversation types
-- `GET /api/conversations/{type}` - Filter by conversation type (user/ai/both)
-
-### Use Cases
-
-1. **External AI Assistants**: Other AI systems can read your conversation history
-2. **Knowledge Management**: Search and analyze patterns across projects
-3. **Bug Tracking**: Find solutions to recurring issues
-4. **Code Review**: Understand implementation decisions and changes
-5. **Project Analysis**: Get insights into development patterns and productivity
-
----
-
-## Beta Features & Endless Mode
-
-> **Note**: Endless Mode is an **experimental feature in the beta branch only**. It is not included in the stable release you install via the marketplace. You must manually switch to the beta channel to try it, and it comes with significant caveats (see below).
-
-Claude-Mem offers a **beta channel** with experimental features. Switch between stable and beta versions directly from the web viewer UI.
-
-### How to Try Beta
-
-1. Open http://localhost:37777
-2. Click Settings (gear icon)
-3. In **Version Channel**, click "Try Beta (Endless Mode)"
-4. Wait for the worker to restart
-
-Your memory data is preserved when switching versions.
-
-### Endless Mode (Beta)
-
-The flagship beta feature is **Endless Mode** - a biomimetic memory architecture that dramatically extends session length:
-
-**The Problem**: Standard Claude Code sessions hit context limits after ~50 tool uses. Each tool adds 1-10k+ tokens, and Claude re-synthesizes all previous outputs on every response (O(N²) complexity).
-
-**The Solution**: Endless Mode compresses tool outputs into ~500-token observations and transforms the transcript in real-time:
-
-```
-Working Memory (Context):     Compressed observations (~500 tokens each)
-Archive Memory (Disk):        Full tool outputs preserved for recall
-```
-
-**Projected Results** (based on theoretical modeling, not production measurements):
-- Significant token reduction in context window
-- More tool uses before context exhaustion
-- Linear O(N) scaling instead of quadratic O(N²)
-- Full transcripts preserved for perfect recall
-
-**Important Caveats**:
-- **Not in stable release** - You must switch to beta branch to use this feature
-- **Still in development** - May have bugs, breaking changes, or incomplete functionality
-- **Slower than standard mode** - Blocking observation generation adds latency to each tool use
-- **Theoretical projections** - The efficiency claims above are based on simulations, not real-world production data
-
-See [Beta Features Documentation](https://docs.claude-mem.ai/beta-features) for details.
-
----
-
-## What's New
-
-**v7.4.6 - Keyword Filtering & AI Integration (December 2025):**
-- ✨ **Keyword Filtering**: Advanced search with AND/OR logic for AI responses and tool executions
-- ✨ **Conversation Differentiation**: Distinguish between user prompts and AI responses
-- ✨ **AI Integration Tools**: Comprehensive tools for external AI systems integration
-- ✨ **Database Access**: Direct database access methods for developers via Python and CLI tools
-- ✨ **Tool Tracking**: Complete AI response and tool execution history with FTS5 search
-- ✨ **Service Management**: One-command service lifecycle management with health checks
-- 🔧 **Enhanced UI**: New AI response and tool execution cards in web viewer
-- 🔧 **API Enhancement**: Extended API endpoints with keyword filtering and conversation type support
-- 📚 **Documentation**: Comprehensive guides for developers and AI integration examples
-- 🚀 **Performance**: FTS5 full-text search implementation for faster keyword searches
-
-**v6.4.9 - Context Configuration Settings:**
-- 11 new settings for fine-grained control over context injection
-- Configure token economics display, observation filtering by type/concept
-- Control number of observations and which fields to display
-
-**v6.4.0 - Dual-Tag Privacy System:**
-- `<private>` tags for user-controlled privacy - wrap sensitive content to exclude from storage
-- System-level `<claude-mem-context>` tags prevent recursive observation storage
-- Edge processing ensures private content never reaches database
-
-**v6.3.0 - Version Channel:**
-- Switch between stable and beta versions from the web viewer UI
-- Try experimental features like Endless Mode without manual git operations
-
-**Previous Highlights:**
-- **v6.0.0**: Major session management & transcript processing improvements
-- **v5.5.0**: mem-search skill enhancement with 100% effectiveness rate
-- **v5.4.0**: Skill-based search architecture (~2,250 tokens saved per session)
-- **v5.1.0**: Web-based viewer UI with real-time updates
-- **v5.0.0**: Hybrid search with Chroma vector database
-
-See [CHANGELOG.md](CHANGELOG.md) for complete version history.
-
----
-
-## System Requirements
-
-- **Node.js**: 18.0.0 or higher
-- **Claude Code**: Latest version with plugin support
-- **Bun**: JavaScript runtime and process manager (auto-installed if missing)
-- **uv**: Python package manager for vector search (auto-installed if missing)
-- **SQLite 3**: For persistent storage (bundled)
-
----
-
-## Key Benefits
-
-### Progressive Disclosure Context
-
-- **Layered memory retrieval** mirrors human memory patterns
-- **Layer 1 (Index)**: See what observations exist with token costs at session start
-- **Layer 2 (Details)**: Fetch full narratives on-demand via MCP search
-- **Layer 3 (Perfect Recall)**: Access source code and original transcripts
-- **Smart decision-making**: Token counts help Claude choose between fetching details or reading code
-- **Type indicators**: Visual cues (🔴 critical, 🟤 decision, 🔵 informational) highlight observation importance
-
-### Automatic Memory
-
-- Context automatically injected when Claude starts
-- No manual commands or configuration needed
-- Works transparently in the background
-
-### Full History Search
-
-- Search across all sessions and observations
-- FTS5 full-text search for fast queries
-- Citations link back to specific observations
-
-### Structured Observations
-
-- AI-powered extraction of learnings
-- Categorized by type (decision, bugfix, feature, etc.)
-- Tagged with concepts and file references
-
-### Multi-Prompt Sessions
-
-- Sessions span multiple user prompts
-- Context preserved across `/clear` commands
-- Track entire conversation threads
-
----
-
-## Configuration
-
-Settings are managed in `~/.claude-mem/settings.json`. The file is auto-created with defaults on first run.
-
-**Available Settings:**
-
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `CLAUDE_MEM_MODEL` | `claude-sonnet-4-5` | AI model for observations |
-| `CLAUDE_MEM_WORKER_PORT` | `37777` | Worker service port |
-| `CLAUDE_MEM_WORKER_HOST` | `127.0.0.1` | Worker bind address (use `0.0.0.0` for remote access) |
-| `CLAUDE_MEM_DATA_DIR` | `~/.claude-mem` | Data directory location |
-| `CLAUDE_MEM_LOG_LEVEL` | `INFO` | Log verbosity (DEBUG, INFO, WARN, ERROR, SILENT) |
-| `CLAUDE_MEM_PYTHON_VERSION` | `3.13` | Python version for chroma-mcp |
-| `CLAUDE_CODE_PATH` | _(auto-detect)_ | Path to Claude executable |
-| `CLAUDE_MEM_CONTEXT_OBSERVATIONS` | `50` | Number of observations to inject at SessionStart |
-
-**Settings Management:**
-
+**手动管理：**
 ```bash
-# Edit settings via CLI helper
-./claude-mem-settings.sh
-
-# Or edit directly
-nano ~/.claude-mem/settings.json
-
-# View current settings
-curl http://localhost:37777/api/settings
-```
-
-**Settings File Format:**
-
-```json
-{
-  "CLAUDE_MEM_MODEL": "claude-sonnet-4-5",
-  "CLAUDE_MEM_WORKER_PORT": "37777",
-  "CLAUDE_MEM_CONTEXT_OBSERVATIONS": "50"
-}
-```
-
-See [Configuration Guide](https://docs.claude-mem.ai/configuration) for details.
-
----
-
-## Development
-
-```bash
-# Clone and build
-git clone https://github.com/chengjon/mem-claude.git
-cd claude-mem
-npm install
-npm run build
-
-# Run tests
-npm test
-
-# Start worker
+# 启动worker服务
 npm run worker:start
 
-# View logs
+# 查看服务状态
+npm run worker:status
+
+# 查看日志
 npm run worker:logs
+
+# 重启服务
+npm run worker:restart
 ```
 
-See [Development Guide](https://docs.claude-mem.ai/development) for detailed instructions.
+### 5. Web界面功能
+
+访问 http://localhost:37777 查看完整的对话历史：
+
+- **实时更新** - 新对话自动刷新
+- **项目筛选** - 按项目分组查看
+- **关键词搜索** - 高级搜索和过滤
+- **对话分类** - 用户对话 vs AI回复
+- **工具历史** - 完整的工具执行记录
+- **分页浏览** - 支持大量数据的分页显示
 
 ---
 
-## Troubleshooting
+## 🔧 API接口
 
-**Quick Diagnostic:**
+### 核心API端点
 
-If you're experiencing issues, describe the problem to Claude and the troubleshoot skill will automatically activate to diagnose and provide fixes.
-
-**Common Issues:**
-
-- Worker not starting → `claude-mem restart`
-- No context appearing → `npm run test:context`
-- Database issues → `sqlite3 ~/.claude-mem/claude-mem.db "PRAGMA integrity_check;"`
-- Search not working → Check FTS5 tables exist
-
-See [Troubleshooting Guide](https://docs.claude-mem.ai/troubleshooting) for complete solutions.
-
-### Windows Known Issues
-
-**Console Window Visibility**: On Windows, a console window may briefly appear when the worker service starts. This is a cosmetic issue that we're working to resolve. We've prioritized stability by removing a workaround that was causing libuv crashes. The window does not affect functionality and will be addressed in a future release when the MCP SDK provides proper window hiding support.
-
----
-
-## Bug Reports
-
-**Automated Bug Report Generator** - Create comprehensive bug reports with one command:
-
+**获取AI回复：**
 ```bash
-# From the plugin directory
-cd ~/.claude/plugins/marketplaces/thedotmack
-npm run bug-report
+GET /api/ai-responses
+参数：
+- keywords: 关键词列表（逗号分隔）
+- logic: AND/OR 逻辑
+- project: 项目名称
+- limit: 数量限制
+- offset: 偏移量
 ```
 
-The bug report tool will:
-- 🌎 **Auto-translate** - Write in ANY language, automatically translates to English
-- 📊 **Collect diagnostics** - Gathers versions, platform info, worker status, logs, and configuration
-- 📝 **Interactive prompts** - Guides you through describing the issue with multiline support
-- 🤖 **AI formatting** - Uses Claude Agent SDK to generate professional GitHub issues
-- 🔒 **Privacy-safe** - Auto-sanitizes paths, optional `--no-logs` flag
-- 🌐 **Auto-submit** - Opens GitHub with pre-filled title and body
-
-**Plugin Directory Paths:**
-- **macOS/Linux**: `~/.claude/plugins/marketplaces/thedotmack`
-- **Windows**: `%USERPROFILE%\.claude\plugins\marketplaces\thedotmack`
-
-**Options:**
+**搜索对话：**
 ```bash
-npm run bug-report --no-logs    # Skip logs for privacy
-npm run bug-report --verbose    # Show all diagnostics
-npm run bug-report --help       # Show help
+GET /api/search-conversations
+参数：
+- keywords: 关键词列表
+- logic: AND/OR 逻辑  
+- type: user/ai/both
+- project: 项目名称
+```
+
+**获取工具执行记录：**
+```bash
+GET /api/tool-executions
+参数：
+- project: 项目名称
+- limit: 数量限制
+- offset: 偏移量
+```
+
+**统计数据：**
+```bash
+GET /api/stats
+返回：
+- version: 版本号
+- uptime: 运行时间
+- activeSessions: 活跃会话数
+- observations: 观察记录数
+- sessions: 会话总数
 ```
 
 ---
 
-## Contributing
+## 📦 数据导出
 
-Contributions are welcome! Please:
+### JSON格式导出
+```bash
+# 导出所有数据
+curl "http://localhost:37777/api/ai-responses?limit=10000" > conversations.json
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes with tests
-4. Update documentation
-5. Submit a Pull Request
+# 导出特定项目
+curl "http://localhost:37777/api/ai-responses?project=my-project&limit=1000" > my-project-conversations.json
+```
 
-See [Development Guide](https://docs.claude-mem.ai/development) for contribution workflow.
+### Python导出
+```python
+from claude_mem_db_tool import ClaudeMemDB
 
----
+db = ClaudeMemDB()
 
-## License
+# 导出项目报告
+md_report = db.export_project_data(
+    project="my-project",
+    format="markdown",
+    include_tool_executions=True
+)
 
-This project is licensed under the **GNU Affero General Public License v3.0** (AGPL-3.0).
+with open("project-report.md", "w", encoding="utf-8") as f:
+    f.write(md_report)
 
-Copyright (C) 2025 Alex Newman (@thedotmack). All rights reserved.
-
-See the [LICENSE](LICENSE) file for full details.
-
-**What This Means:**
-
-- You can use, modify, and distribute this software freely
-- If you modify and deploy on a network server, you must make your source code available
-- Derivative works must also be licensed under AGPL-3.0
-- There is NO WARRANTY for this software
-
----
-
-## Support
-
-- **Documentation**: [docs/](docs/)
-- **Issues**: [GitHub Issues](https://github.com/chengjon/mem-claude/issues)
-- **Repository**: [github.com/chengjon/mem-claude](https://github.com/chengjon/mem-claude)
-- **Author**: Alex Newman ([@thedotmack](https://github.com/thedotmack))
+print("报告已保存到 project-report.md")
+```
 
 ---
 
-**Built with Claude Agent SDK** | **Powered by Claude Code** | **Made with TypeScript**
+## 🎮 高级用法
+
+### 自定义关键词搜索
+```python
+# 搜索包含特定技术栈的对话
+tech_stack_search = db.search_ai_responses(
+    keywords=["React", "TypeScript", "Node.js"],
+    logic="AND",
+    project="frontend-project",
+    limit=30
+)
+
+# 搜索错误和解决方案
+error_solutions = db.search_ai_responses(
+    keywords=["错误", "解决方案", "修复"],
+    logic="OR",
+    limit=50
+)
+```
+
+### 工具执行记录分析
+```python
+# 查看工具使用统计
+tool_usage = db.get_tool_executions(
+    project="my-project",
+    limit=100
+)
+
+# 分析成功率
+successful_tools = [t for t in tool_usage if t['success']]
+success_rate = len(successful_tools) / len(tool_usage) * 100
+
+print(f"工具执行成功率: {success_rate:.1f}%")
+```
+
+### 集成到其他AI系统
+```python
+# 集成到您的AI助手中
+class ClaudeMemIntegration:
+    def __init__(self):
+        self.base_url = "http://localhost:37777"
+    
+    def get_context(self, query, project=None):
+        """为AI助手获取相关上下文"""
+        params = {
+            "keywords": query.split(),
+            "logic": "AND",
+            "limit": 5
+        }
+        if project:
+            params["project"] = project
+        
+        response = requests.get(f"{self.base_url}/api/ai-responses", params=params)
+        return [item['response_text'] for item in response.json()['items']]
+    
+    def search_solutions(self, problem):
+        """搜索类似问题的解决方案"""
+        return self.get_context(problem)
+
+# 使用示例
+mem_integration = ClaudeMemIntegration()
+context = mem_integration.get_context("Python数据库连接问题")
+```
+
+---
+
+## 🔧 系统要求
+
+- **Node.js**: 18.0.0 或更高版本
+- **Claude Code**: 最新版本，支持插件
+- **Bun**: JavaScript运行时和进程管理器（自动安装）
+- **SQLite 3**: 持久化存储（内置）
+
+---
+
+## 📊 数据存储位置
+
+- **数据库**: `~/.claude-mem/claude-mem.db`
+- **PID文件**: `~/.claude-mem/.worker.pid`
+- **端口文件**: `~/.claude-mem/.worker.port`
+- **日志文件**: `~/.claude-mem/logs/worker-YYYY-MM-DD.log`
+- **配置文件**: `~/.claude-mem/settings.json`
+
+环境变量覆盖：
+```bash
+export CLAUDE_MEM_DATA_DIR=/custom/path
+```
+
+---
+
+## 🐛 故障排除
+
+### 常见问题
+
+**服务无法启动：**
+```bash
+# 检查端口占用
+lsof -i :37777
+
+# 杀死占用端口的进程
+kill -9 $(lsof -t -i:37777)
+
+# 重新启动
+./mem.sh start
+```
+
+**看不到对话记录：**
+```bash
+# 检查数据库文件
+ls -la ~/.claude-mem/
+
+# 查看服务日志
+./mem.sh logs
+
+# 确认插件已安装
+/plugin list | grep claude-mem
+```
+
+**关键词搜索不工作：**
+```bash
+# 检查API是否正常
+curl "http://localhost:37777/api/ai-responses?limit=1"
+
+# 检查数据库是否有数据
+python3 -c "
+from claude_mem_db_tool import ClaudeMemDB
+db = ClaudeMemDB()
+print('项目数量:', len(db.get_projects()))
+db.close()
+"
+```
+
+### 诊断工具
+```bash
+# 运行完整诊断
+npm run test:context
+
+# 查看服务状态
+./mem.sh status
+
+# 查看详细日志
+./mem.sh logs
+```
+
+---
+
+## 📚 文档资源
+
+- **完整文档**: `docs/` 目录
+- **快速开始**: `QUICK_START.md`
+- **数据库访问**: `DATABASE_ACCESS_GUIDE.md`
+- **API文档**: http://localhost:37777/api/docs
+- **迁移指南**: `MIGRATION_GUIDE.md`
+
+---
+
+## 🔗 相关链接
+
+- **项目仓库**: https://github.com/chengjon/mem-claude
+- **问题反馈**: https://github.com/chengjon/mem-claude/issues
+- **功能建议**: https://github.com/chengjon/mem-claude/discussions
+
+---
+
+## 📋 更新日志
+
+**v7.4.6 - 关键词过滤与AI集成 (2025-12-22)**
+- ✨ **关键词过滤**: 支持AND/OR逻辑的关键词搜索
+- ✨ **AI集成工具**: 完整的外部AI系统集成方案
+- ✨ **对话分类**: 区分用户对话和AI回复
+- ✨ **工具跟踪**: 完整的工具执行历史记录
+- 🔧 **服务管理**: 一键服务生命周期管理
+- 📚 **增强文档**: 完整的API和集成指南
+
+---
+
+**Claude-Mem** - 让AI对话拥有记忆，让知识持续积累 💡
