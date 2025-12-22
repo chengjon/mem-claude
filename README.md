@@ -1,10 +1,10 @@
 <h1 align="center">
   <br>
-  <a href="https://github.com/thedotmack/claude-mem">
+  <a href="https://github.com/chengjon/mem-claude">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/thedotmack/claude-mem/main/docs/public/claude-mem-logo-for-dark-mode.webp">
-      <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/thedotmack/claude-mem/main/docs/public/claude-mem-logo-for-light-mode.webp">
-      <img src="https://raw.githubusercontent.com/thedotmack/claude-mem/main/docs/public/claude-mem-logo-for-light-mode.webp" alt="Claude-Mem" width="400">
+      <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/chengjon/mem-claude/main/docs/public/claude-mem-logo-for-dark-mode.webp">
+      <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/chengjon/mem-claude/main/docs/public/claude-mem-logo-for-light-mode.webp">
+      <img src="https://raw.githubusercontent.com/chengjon/mem-claude/main/docs/public/claude-mem-logo-for-light-mode.webp" alt="Claude-Mem" width="400">
     </picture>
   </a>
   <br>
@@ -30,9 +30,9 @@
 <p align="center">
   <a href="https://trendshift.io/repositories/15496" target="_blank">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/thedotmack/claude-mem/main/docs/public/trendshift-badge-dark.svg">
-      <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/thedotmack/claude-mem/main/docs/public/trendshift-badge.svg">
-      <img src="https://raw.githubusercontent.com/thedotmack/claude-mem/main/docs/public/trendshift-badge.svg" alt="thedotmack/claude-mem | Trendshift" width="250" height="55"/>
+      <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/chengjon/mem-claude/main/docs/public/trendshift-badge-dark.svg">
+      <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/chengjon/mem-claude/main/docs/public/trendshift-badge.svg">
+      <img src="https://raw.githubusercontent.com/chengjon/mem-claude/main/docs/public/trendshift-badge.svg" alt="chengjon/mem-claude | Trendshift" width="250" height="55"/>
     </picture>
   </a>
 </p>
@@ -40,9 +40,9 @@
 <br>
 
 <p align="center">
-  <a href="https://github.com/thedotmack/claude-mem">
+  <a href="https://github.com/chengjon/mem-claude">
     <picture>
-      <img src="https://raw.githubusercontent.com/thedotmack/claude-mem/main/docs/public/cm-preview.gif" alt="Claude-Mem Preview" width="800">
+      <img src="https://raw.githubusercontent.com/chengjon/mem-claude/main/docs/public/cm-preview.gif" alt="Claude-Mem Preview" width="800">
     </picture>
   </a>
 </p>
@@ -68,7 +68,7 @@
 Start a new Claude Code session in the terminal and enter the following commands:
 
 ```
-> /plugin marketplace add thedotmack/claude-mem
+> /plugin marketplace add chengjon/mem-claude
 
 > /plugin install claude-mem
 ```
@@ -485,7 +485,7 @@ See [Configuration Guide](https://docs.claude-mem.ai/configuration) for details.
 
 ```bash
 # Clone and build
-git clone https://github.com/thedotmack/claude-mem.git
+git clone https://github.com/chengjon/mem-claude.git
 cd claude-mem
 npm install
 npm run build
@@ -590,8 +590,8 @@ See the [LICENSE](LICENSE) file for full details.
 ## Support
 
 - **Documentation**: [docs/](docs/)
-- **Issues**: [GitHub Issues](https://github.com/thedotmack/claude-mem/issues)
-- **Repository**: [github.com/thedotmack/claude-mem](https://github.com/thedotmack/claude-mem)
+- **Issues**: [GitHub Issues](https://github.com/chengjon/mem-claude/issues)
+- **Repository**: [github.com/chengjon/mem-claude](https://github.com/chengjon/mem-claude)
 - **Author**: Alex Newman ([@thedotmack](https://github.com/thedotmack))
 
 ---

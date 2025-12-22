@@ -88,7 +88,7 @@ git push origin main
    ```
 
 2. **验证推送**:
-   - 访问 https://github.com/thedotmack/claude-mem
+   - 访问 https://github.com/chengjon/mem-claude
    - 检查最新的提交和文件变更
 
 3. **版本发布**:
@@ -103,9 +103,9 @@ git push origin main
 
 ## 🔗 有用链接
 
-- **仓库地址**: https://github.com/thedotmack/claude-mem
-- **最新提交**: https://github.com/thedotmack/claude-mem/commit/5d816ea
-- **比较变更**: https://github.com/thedotmack/claude-mem/compare/main...HEAD
+- **仓库地址**: https://github.com/chengjon/mem-claude
+- **最新提交**: https://github.com/chengjon/mem-claude/commit/5d816ea
+- **比较变更**: https://github.com/chengjon/mem-claude/compare/main...HEAD
 
 ---
 

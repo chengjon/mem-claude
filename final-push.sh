@@ -24,7 +24,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 echo -e "${BLUE}📊 Current Status:${NC}"
-echo "Repository: https://github.com/thedotmack/claude-mem.git"
+echo "Repository: https://github.com/chengjon/mem-claude.git"
 echo ""
 
 # Check git status
@@ -76,9 +76,9 @@ if [[ $confirm =~ ^[Yy]$ ]]; then
         echo -e "${GREEN}✅ Successfully pushed to GitHub!${NC}"
         echo ""
         echo -e "${BLUE}🌐 Repository Links:${NC}"
-        echo "  • Main repo: https://github.com/thedotmack/claude-mem"
-        echo "  • Latest commit: https://github.com/thedotmack/claude-mem/commit/$(git rev-parse HEAD)"
-        echo "  • Compare changes: https://github.com/thedotmack/claude-mem/compare/main...HEAD"
+        echo "  • Main repo: https://github.com/chengjon/mem-claude"
+        echo "  • Latest commit: https://github.com/chengjon/mem-claude/commit/$(git rev-parse HEAD)"
+        echo "  • Compare changes: https://github.com/chengjon/mem-claude/compare/main...HEAD"
         echo ""
         echo -e "${BLUE}🎯 Next Steps:${NC}"
         echo "  1. Visit the repository to verify changes"
@@ -96,7 +96,7 @@ if [[ $confirm =~ ^[Yy]$ ]]; then
         echo "2. Verify GitHub credentials:"
         echo "   git remote -v"
         echo "3. Update credentials if needed:"
-        echo "   git remote set-url origin https://<username>:<token>@github.com/thedotmack/claude-mem.git"
+        echo "   git remote set-url origin https://<username>:<token>@github.com/chengjon/mem-claude.git"
         echo "4. Check repository permissions"
         echo "5. Try pushing with verbose output:"
         echo "   git push origin main --verbose"
@@ -119,7 +119,7 @@ echo "Version: 7.4.6 (includes keyword filtering & AI conversation differentiati
 echo "Commits to push: $(git rev-list --count HEAD ^origin/main 2>/dev/null || echo "unknown")"
 echo ""
 echo -e "${BLUE}🔗 Useful Links:${NC}"
-echo "  • Repository: https://github.com/thedotmack/claude-mem"
-echo "  • Issues: https://github.com/thedotmack/claude-mem/issues"
-echo "  • Wiki: https://github.com/thedotmack/claude-mem/wiki"
+echo "  • Repository: https://github.com/chengjon/mem-claude"
+echo "  • Issues: https://github.com/chengjon/mem-claude/issues"
+echo "  • Wiki: https://github.com/chengjon/mem-claude/wiki"
 echo ""
