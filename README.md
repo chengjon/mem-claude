@@ -17,7 +17,7 @@
     <img src="https://img.shields.io/badge/License-AGPL%203.0-blue.svg" alt="License">
   </a>
   <a href="package.json">
-    <img src="https://img.shields.io/badge/version-6.5.0-green.svg" alt="Version">
+    <img src="https://img.shields.io/badge/version-7.4.6-green.svg" alt="Version">
   </a>
   <a href="package.json">
     <img src="https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg" alt="Node">
@@ -203,6 +203,110 @@ See [Search Tools Guide](https://docs.claude-mem.ai/usage/search-tools) for deta
 
 ---
 
+## AI Integration Tools
+
+Claude-Mem v7.4.6 introduces comprehensive tools for external AI systems to access and analyze conversation history.
+
+### Database Access Tools
+
+**Python Database Tool** (`claude_mem_db_tool.py`):
+```bash
+# Search AI responses with keywords
+python claude_mem_db_tool.py search-ai-responses "bug fix" "authentication" --logic AND
+
+# Search user prompts
+python claude_mem_db_tool.py search-user-prompts "implementation" --limit 10
+
+# Get conversation timeline
+python claude_mem_db_tool.py get-conversation-timeline "my-project"
+
+# Export data
+python claude_mem_db_tool.py export-data --format json --output conversations.json
+```
+
+**CLI Search Tool** (`search_conversations.py`):
+```bash
+# Search all conversations
+python search_conversations.py --keywords "database" --type ai
+
+# Search user conversations only
+python search_conversations.py --keywords "bug" --type user
+
+# Search with OR logic
+python search_conversations.py --keywords "error crash" --logic OR
+```
+
+### AI Integration Examples
+
+**ClaudeMemAIIntegration** class for external AI systems:
+```python
+from ai_integration_examples import ClaudeMemAIIntegration
+
+# Initialize integration
+integration = ClaudeMemAIIntegration()
+
+# Get relevant context for AI assistance
+context = integration.get_relevant_context(
+    query="How to fix authentication bugs?",
+    project="my-project",
+    limit=5
+)
+
+# Analyze conversation patterns
+patterns = integration.analyze_conversation_patterns("my-project")
+
+# Get solution history
+solutions = integration.get_solution_history(
+    problem_type="authentication",
+    project="my-project"
+)
+```
+
+### Service Management
+
+**One-command service management** (`mem.sh`):
+```bash
+# Start service
+./mem.sh start
+
+# Check status
+./mem.sh status
+
+# View logs
+./mem.sh logs
+
+# Restart service
+./mem.sh restart
+
+# Stop service
+./mem.sh stop
+```
+
+### Enhanced Web UI Features
+
+- **Keyword Filtering**: Search AI responses with AND/OR logic in the web interface
+- **Conversation Differentiation**: Filter between user prompts and AI responses
+- **Tool Execution History**: Complete record of tool usage and outcomes
+- **Real-time Updates**: Live streaming of new conversations and responses
+
+### API Endpoints
+
+Extended API with new endpoints:
+- `GET /api/ai-responses` - Search AI responses with keyword filtering
+- `GET /api/tool-executions` - Get tool execution history
+- `GET /api/search-conversations` - Unified search across all conversation types
+- `GET /api/conversations/{type}` - Filter by conversation type (user/ai/both)
+
+### Use Cases
+
+1. **External AI Assistants**: Other AI systems can read your conversation history
+2. **Knowledge Management**: Search and analyze patterns across projects
+3. **Bug Tracking**: Find solutions to recurring issues
+4. **Code Review**: Understand implementation decisions and changes
+5. **Project Analysis**: Get insights into development patterns and productivity
+
+---
+
 ## Beta Features & Endless Mode
 
 > **Note**: Endless Mode is an **experimental feature in the beta branch only**. It is not included in the stable release you install via the marketplace. You must manually switch to the beta channel to try it, and it comes with significant caveats (see below).
@@ -248,6 +352,18 @@ See [Beta Features Documentation](https://docs.claude-mem.ai/beta-features) for 
 ---
 
 ## What's New
+
+**v7.4.6 - Keyword Filtering & AI Integration (December 2025):**
+- ✨ **Keyword Filtering**: Advanced search with AND/OR logic for AI responses and tool executions
+- ✨ **Conversation Differentiation**: Distinguish between user prompts and AI responses
+- ✨ **AI Integration Tools**: Comprehensive tools for external AI systems integration
+- ✨ **Database Access**: Direct database access methods for developers via Python and CLI tools
+- ✨ **Tool Tracking**: Complete AI response and tool execution history with FTS5 search
+- ✨ **Service Management**: One-command service lifecycle management with health checks
+- 🔧 **Enhanced UI**: New AI response and tool execution cards in web viewer
+- 🔧 **API Enhancement**: Extended API endpoints with keyword filtering and conversation type support
+- 📚 **Documentation**: Comprehensive guides for developers and AI integration examples
+- 🚀 **Performance**: FTS5 full-text search implementation for faster keyword searches
 
 **v6.4.9 - Context Configuration Settings:**
 - 11 new settings for fine-grained control over context injection
