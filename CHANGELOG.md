@@ -4,6 +4,52 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [7.4.6] - 2025-12-22
+
+### Added
+- ✨ **Keyword Filtering**: Add keyword filtering with AND/OR logic for AI responses
+- ✨ **Conversation Differentiation**: Implement conversation type differentiation (user vs AI)
+- ✨ **AI Integration Tools**: Create comprehensive AI integration tools and examples
+- ✨ **Database Access**: Add comprehensive database access methods for external AI systems
+- ✨ **Service Management**: Implement mem.sh script for service lifecycle management
+
+### Database
+- 🔧 **FTS5 Integration**: Extend ai_responses table with FTS5 full-text search support
+- 🔧 **Tool Tracking**: Add tool_executions table for detailed tool execution tracking
+- 🔧 **Enhanced Search**: Implement keyword search with pagination support
+- 🔧 **API Enhancement**: Add conversation type filtering in search APIs
+
+### Frontend
+- 🎨 **AI Response Cards**: Add AiResponseCard component for AI reply display
+- 🎨 **Tool Execution Cards**: Add ToolExecutionCard for tool execution details
+- 🎨 **Search UI**: Implement keyword search UI in Header component
+- 🎨 **Enhanced Feed**: Upgrade Feed component with new data types support
+
+### Tools & Scripts
+- 🛠️ **Database Tool**: Create claude_mem_db_tool.py for comprehensive database access
+- 🛠️ **CLI Search**: Build search_conversations.py CLI tool for conversation search
+- 🛠️ **AI Examples**: Provide ai_integration_examples.py for AI systems integration
+- 🛠️ **Quick Start**: Add comprehensive QUICK_START guide for developers
+
+### Documentation
+- 📚 **Enhancement Proposal**: Add ENHANCEMENT_PROPOSAL.md for future feature planning
+- 📚 **Technical Analysis**: Create TECHNICAL_DEBT_ANALYSIS.md report
+- 📚 **Project Overview**: Update IFLOW.md with comprehensive project overview
+- 📚 **Database Guide**: Add DATABASE_ACCESS_GUIDE.md for developers
+
+### Breaking Changes
+- ⚠️ **Database Schema**: Extended with new tables (ai_responses, tool_executions)
+- ⚠️ **API Changes**: Enhanced API endpoints with new parameters for keyword filtering
+
+### Performance
+- ⚡ **Database Optimization**: Optimized database queries with proper indexing
+- ⚡ **Search Performance**: FTS5 full-text search implementation for faster keyword searches
+
+### Refactoring
+- 🔄 **SessionStore Enhancement**: Enhanced SessionStore with FTS5 support and keyword search
+- 🔄 **Component Architecture**: Improved React component structure and reusability
+- 🔄 **Service Layer**: Enhanced service management and error handling
+
 ## [7.4.5] - 2025-12-21
 
 ## Bug Fixes
