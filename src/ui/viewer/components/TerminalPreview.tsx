@@ -1,5 +1,6 @@
 import React, { useMemo, useRef, useLayoutEffect, useState } from 'react';
 import AnsiToHtml from 'ansi-to-html';
+import DOMPurify from 'dompurify';
 
 interface TerminalPreviewProps {
   content: string;
@@ -26,7 +27,12 @@ export function TerminalPreview({ content, isLoading = false, className = '' }: 
       scrollTopRef.current = preRef.current.scrollTop;
     }
     if (!content) return '';
-    return ansiConverter.toHtml(content);
+    const converted = ansiConverter.toHtml(content);
+    // Sanitize HTML to prevent XSS - only allow safe styling tags
+    return DOMPurify.sanitize(converted, {
+      ALLOWED_TAGS: ['span', 'br', 'div'],
+      ALLOWED_ATTR: ['style', 'class']
+    });
   }, [content]);
 
   // Restore scroll position after render
