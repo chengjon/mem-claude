@@ -15,6 +15,7 @@ import { SessionStore } from '../sqlite/SessionStore.js';
 import { logger } from '../../utils/logger.js';
 import { SettingsDefaultsManager } from '../../shared/SettingsDefaultsManager.js';
 import { USER_SETTINGS_PATH } from '../../shared/paths.js';
+import { UVX_PATH } from '../../shared/command-paths.js';
 import path from 'path';
 import os from 'os';
 
@@ -104,7 +105,7 @@ export class ChromaSync {
       const isWindows = process.platform === 'win32';
 
       const transportOptions: any = {
-        command: 'uvx',
+        command: UVX_PATH,
         args: [
           '--python', pythonVersion,
           'chroma-mcp',

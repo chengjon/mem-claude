@@ -14,8 +14,9 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { getWorkerPort, getWorkerHost } from '../shared/worker-utils.js';
 import { logger } from '../utils/logger.js';
-import { exec, execSync } from 'child_process';
+import { exec } from 'child_process';
 import { promisify } from 'util';
+import { NODE_PATH, UVX_PATH } from '../shared/command-paths.js';
 
 const execAsync = promisify(exec);
 
@@ -453,7 +454,7 @@ export class WorkerService {
       // Connect to MCP server with timeout guard
       const mcpServerPath = path.join(__dirname, 'mcp-server.cjs');
       const transport = new StdioClientTransport({
-        command: 'node',
+        command: NODE_PATH,
         args: [mcpServerPath],
         env: process.env
       });

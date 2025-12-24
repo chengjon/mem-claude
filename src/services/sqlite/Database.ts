@@ -50,13 +50,15 @@ export class DatabaseManager {
 
     this.db = new Database(DB_PATH, { create: true, readwrite: true });
 
-    // Apply optimized SQLite settings
-    this.db.run('PRAGMA journal_mode = WAL');
-    this.db.run('PRAGMA synchronous = NORMAL');
-    this.db.run('PRAGMA foreign_keys = ON');
-    this.db.run('PRAGMA temp_store = memory');
-    this.db.run(`PRAGMA mmap_size = ${SQLITE_MMAP_SIZE_BYTES}`);
-    this.db.run(`PRAGMA cache_size = ${SQLITE_CACHE_SIZE_PAGES}`);
+    // Apply optimized SQLite settings for concurrent access and performance
+    this.db.run('PRAGMA journal_mode = WAL');  // Write-Ahead Logging for better concurrency
+    this.db.run('PRAGMA synchronous = NORMAL');  // Safe but faster than FULL
+    this.db.run('PRAGMA foreign_keys = ON');  // Enforce foreign key constraints
+    this.db.run('PRAGMA temp_store = memory');  // Use memory for temp tables
+    this.db.run(`PRAGMA mmap_size = ${SQLITE_MMAP_SIZE_BYTES}`);  // Memory-mapped I/O
+    this.db.run(`PRAGMA cache_size = ${SQLITE_CACHE_SIZE_PAGES}`);  // Increase cache
+    this.db.run('PRAGMA busy_timeout = 5000');  // Wait 5s for locks before timeout
+    this.db.run('PRAGMA wal_autocheckpoint = 1000');  // Checkpoint every 1000 pages
 
     // Initialize schema_versions table
     this.initializeSchemaVersions();

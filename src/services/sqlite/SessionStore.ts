@@ -14,6 +14,13 @@ import {
 } from '../../types/database.js';
 
 /**
+ * Type-safe database query parameter array
+ * Supports all SQLite bind parameter types: string, number, boolean, null, Buffer
+ */
+export type QueryParameter = string | number | boolean | null | Buffer;
+export type QueryParameters = QueryParameter[];
+
+/**
  * Session data store for SDK sessions, observations, and summaries
  * Provides simple, synchronous CRUD operations for session-based memory
  */
@@ -108,6 +115,10 @@ export class SessionStore {
           CREATE INDEX IF NOT EXISTS idx_observations_type ON observations(type);
           CREATE INDEX IF NOT EXISTS idx_observations_created ON observations(created_at_epoch DESC);
 
+          -- Composite indexes for optimized query performance
+          CREATE INDEX IF NOT EXISTS idx_observations_project_type_created ON observations(project, type, created_at_epoch DESC);
+          CREATE INDEX IF NOT EXISTS idx_observations_covering ON observations(created_at_epoch, id, project, type);
+
           CREATE TABLE IF NOT EXISTS session_summaries (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             sdk_session_id TEXT UNIQUE NOT NULL,
@@ -128,6 +139,9 @@ export class SessionStore {
           CREATE INDEX IF NOT EXISTS idx_session_summaries_sdk_session ON session_summaries(sdk_session_id);
           CREATE INDEX IF NOT EXISTS idx_session_summaries_project ON session_summaries(project);
           CREATE INDEX IF NOT EXISTS idx_session_summaries_created ON session_summaries(created_at_epoch DESC);
+
+          -- Composite index for session summary queries
+          CREATE INDEX IF NOT EXISTS idx_session_summaries_project_created ON session_summaries(project, created_at_epoch DESC);
         `);
 
         // Record migration004 as applied
@@ -613,8 +627,69 @@ export class SessionStore {
   }
 
   /**
+   * Validate and sanitize keywords for FTS5 search
+   * Prevents FTS5 injection attacks
+   */
+  private validateKeywords(keywords: string[]): string[] {
+    const FTS5_ALLOWED_PATTERN = /^[a-zA-Z0-9\s\-_\.@:,]+$/;
+
+    return keywords.filter(keyword => {
+      // Skip empty keywords
+      if (!keyword || keyword.trim().length === 0) {
+        return false;
+      }
+
+      // Check length (prevent DoS via extremely long keywords)
+      if (keyword.length > 100) {
+        logger.warn('FTS5', 'Keyword too long, skipping', { length: keyword.length });
+        return false;
+      }
+
+      // Validate characters
+      if (!FTS5_ALLOWED_PATTERN.test(keyword)) {
+        logger.warn('FTS5', 'Invalid characters in keyword, skipping', { keyword });
+        return false;
+      }
+
+      // Check for potentially dangerous FTS5 operators
+      const dangerousPatterns = [
+        /\bor\b/i,  // OR operator
+        /\bnot\b/i, // NOT operator
+        /NEAR\(/i,  // NEAR operator
+        /\*/        // Wildcard (could expose all data)
+      ];
+
+      for (const pattern of dangerousPatterns) {
+        if (pattern.test(keyword)) {
+          logger.warn('FTS5', 'Dangerous operator in keyword, skipping', { keyword });
+          return false;
+        }
+      }
+
+      return true;
+    }).map(k => k.trim());
+  }
+
+  /**
+   * Build safe FTS5 search query from validated keywords
+   */
+  private buildFTS5Query(keywords: string[], logic: 'AND' | 'OR'): string {
+    const validated = this.validateKeywords(keywords);
+
+    if (validated.length === 0) {
+      throw new Error('No valid keywords after validation');
+    }
+
+    // Escape quotes and wrap in double quotes for phrase search
+    return validated
+      .map(keyword => `"${keyword.replace(/"/g, '""')}"`)
+      .join(` ${logic} `);
+  }
+
+  /**
    * Get AI responses with keyword filtering (for enhanced UI filtering)
    * Supports multiple keywords with AND/OR logic using FTS5 full-text search
+   * @security All keywords are validated to prevent FTS5 injection
    */
   getAiResponsesWithKeywords(
     keywords: string[] = [],
@@ -643,10 +718,10 @@ export class SessionStore {
     // If no keywords provided, fall back to regular method
     if (keywords.length === 0) {
       const allItems = this.getAllRecentAiResponses(limit + offset + 1);
-      const filteredItems = project 
+      const filteredItems = project
         ? allItems.filter(item => item.project === project)
         : allItems;
-      
+
       const paginatedItems = filteredItems.slice(offset, offset + limit);
       return {
         items: paginatedItems,
@@ -655,10 +730,19 @@ export class SessionStore {
       };
     }
 
-    // Build FTS5 search query
-    const searchQuery = keywords
-      .map(keyword => `"${keyword.replace(/"/g, '""')}"`) // Escape quotes for FTS5
-      .join(` ${logic} `);
+    // Build safe FTS5 search query with validation
+    let searchQuery: string;
+    try {
+      searchQuery = this.buildFTS5Query(keywords, logic);
+    } catch (error) {
+      logger.error('FTS5', 'Failed to build search query', { keywords }, error as Error);
+      // Return empty result on invalid query
+      return {
+        items: [],
+        total: 0,
+        hasMore: false
+      };
+    }
 
     let baseQuery = `
       SELECT ar.id, ar.claude_session_id, ar.sdk_session_id, ar.project, ar.prompt_number,
@@ -677,7 +761,7 @@ export class SessionStore {
       WHERE ai_responses_fts MATCH ?
     `;
 
-    const params: any[] = [searchQuery];
+    const params: QueryParameters = [searchQuery];
 
     // Add project filter if specified
     if (project) {
@@ -1362,7 +1446,7 @@ export class SessionStore {
 
     // Build placeholders for IN clause
     const placeholders = ids.map(() => '?').join(',');
-    const params: any[] = [...ids];
+    const params: QueryParameters = [...ids];
     const additionalConditions: string[] = [];
 
     // Apply project filter
@@ -1657,38 +1741,29 @@ export class SessionStore {
     const now = new Date();
     const nowEpoch = now.getTime();
 
-    // CRITICAL: INSERT OR IGNORE makes this idempotent
-    // First call (prompt #1): Creates new row
-    // Subsequent calls (prompt #2+): Ignored, returns existing ID
+    // Use UPSERT for atomic insert-or-update to prevent race conditions
+    // - First call (prompt #1): Creates new row
+    // - Subsequent calls (prompt #2+): Updates project/user_prompt if non-empty
+    // - ON CONFLICT DO UPDATE ensures atomic operation (no window for races)
     const stmt = this.db.prepare(`
-      INSERT OR IGNORE INTO sdk_sessions
+      INSERT INTO sdk_sessions
       (claude_session_id, sdk_session_id, project, user_prompt, started_at, started_at_epoch, status)
       VALUES (?, ?, ?, ?, ?, ?, 'active')
+      ON CONFLICT(claude_session_id) DO UPDATE SET
+        project = COALESCE(NULLIF(?, ''), project),
+        user_prompt = COALESCE(NULLIF(?, ''), user_prompt)
+      WHERE claude_session_id = ?
     `);
 
-    const result = stmt.run(claudeSessionId, claudeSessionId, project, userPrompt, now.toISOString(), nowEpoch);
+    stmt.run(claudeSessionId, claudeSessionId, project, userPrompt,
+             now.toISOString(), nowEpoch, project, userPrompt, claudeSessionId);
 
-    // If lastInsertRowid is 0, insert was ignored (session exists), so fetch existing ID
-    if (result.lastInsertRowid === 0 || result.changes === 0) {
-      // Session exists - UPDATE project and user_prompt if we have non-empty values
-      // This fixes the bug where SAVE hook creates session with empty project,
-      // then NEW hook can't update it because INSERT OR IGNORE skips the insert
-      if (project && project.trim() !== '') {
-        this.db.prepare(`
-          UPDATE sdk_sessions
-          SET project = ?, user_prompt = ?
-          WHERE claude_session_id = ?
-        `).run(project, userPrompt, claudeSessionId);
-      }
-
-      const selectStmt = this.db.prepare(`
-        SELECT id FROM sdk_sessions WHERE claude_session_id = ? LIMIT 1
-      `);
-      const existing = selectStmt.get(claudeSessionId) as { id: number } | undefined;
-      return existing!.id;
-    }
-
-    return result.lastInsertRowid as number;
+    // Fetch and return the session ID
+    const selectStmt = this.db.prepare(`
+      SELECT id FROM sdk_sessions WHERE claude_session_id = ? LIMIT 1
+    `);
+    const existing = selectStmt.get(claudeSessionId) as { id: number } | undefined;
+    return existing!.id;
   }
 
   /**
@@ -1978,7 +2053,7 @@ export class SessionStore {
     const orderClause = orderBy === 'date_asc' ? 'ASC' : 'DESC';
     const limitClause = limit ? `LIMIT ${limit}` : '';
     const placeholders = ids.map(() => '?').join(',');
-    const params: any[] = [...ids];
+    const params: QueryParameters = [...ids];
 
     // Apply project filter
     const whereClause = project
@@ -2010,7 +2085,7 @@ export class SessionStore {
     const orderClause = orderBy === 'date_asc' ? 'ASC' : 'DESC';
     const limitClause = limit ? `LIMIT ${limit}` : '';
     const placeholders = ids.map(() => '?').join(',');
-    const params: any[] = [...ids];
+    const params: QueryParameters = [...ids];
 
     // Apply project filter
     const projectFilter = project ? 'AND s.project = ?' : '';
@@ -2045,9 +2120,9 @@ export class SessionStore {
     depthAfter: number = 10,
     project?: string
   ): {
-    observations: any[];
-    sessions: any[];
-    prompts: any[];
+    observations: ObservationRecord[];
+    sessions: SdkSessionRecord[];
+    prompts: UserPromptRecord[];
   } {
     return this.getTimelineAroundObservation(null, anchorEpoch, depthBefore, depthAfter, project);
   }
@@ -2063,9 +2138,9 @@ export class SessionStore {
     depthAfter: number = 10,
     project?: string
   ): {
-    observations: any[];
-    sessions: any[];
-    prompts: any[];
+    observations: ObservationRecord[];
+    sessions: SdkSessionRecord[];
+    prompts: UserPromptRecord[];
   } {
     const projectFilter = project ? 'AND project = ?' : '';
     const projectParams = project ? [project] : [];

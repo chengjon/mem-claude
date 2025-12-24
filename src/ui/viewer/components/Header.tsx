@@ -2,6 +2,7 @@ import React from 'react';
 import { ThemeToggle } from './ThemeToggle';
 import { ThemePreference } from '../hooks/useTheme';
 import { GitHubStarsButton } from './GitHubStarsButton';
+import { SearchType } from '../constants/config';
 
 interface HeaderProps {
   isConnected: boolean;
@@ -12,7 +13,10 @@ interface HeaderProps {
   logic?: 'AND' | 'OR';
   onKeywordsChange: (keywords: string[]) => void;
   onLogicChange: (logic: 'AND' | 'OR') => void;
+  searchType?: SearchType;
+  onSearchTypeChange?: (type: SearchType) => void;
   isProcessing: boolean;
+  isSearchLoading?: boolean;
   queueDepth: number;
   themePreference: ThemePreference;
   onThemeChange: (theme: ThemePreference) => void;
@@ -28,7 +32,10 @@ export function Header({
   logic = 'AND',
   onKeywordsChange,
   onLogicChange,
+  searchType = 'standard',
+  onSearchTypeChange,
   isProcessing,
+  isSearchLoading = false,
   queueDepth,
   themePreference,
   onThemeChange,
@@ -142,6 +149,107 @@ export function Header({
             >
               ×
             </button>
+          )}
+        </div>
+
+        {/* Search Type Selector */}
+        <div className="search-type-selector" style={{ position: 'relative' }}>
+          <select
+            value={searchType}
+            onChange={e => onSearchTypeChange?.(e.target.value as SearchType)}
+            disabled={isSearchLoading}
+            style={{
+              padding: '4px 8px',
+              border: '1px solid #ccc',
+              borderRadius: '4px',
+              fontSize: '12px',
+              marginRight: '4px',
+              minWidth: '120px',
+              opacity: isSearchLoading ? 0.6 : 1,
+              cursor: isSearchLoading ? 'wait' : 'pointer'
+            }}
+            title={isSearchLoading ? 'Searching...' : '选择搜索类型'}
+          >
+            <option value="standard">🔍 标准搜索</option>
+            <option value="timeline">📅 时间线搜索</option>
+            <option value="decisions">💡 决策搜索</option>
+            <option value="changes">🔄 变更搜索</option>
+            <option value="how-it-works">⚙️ 工作原理</option>
+            <option value="by-concept">🏷️ 按概念搜索</option>
+            <option value="by-file">📄 按文件搜索</option>
+            <option value="by-type">🏷️ 按类型搜索</option>
+          </select>
+
+          {/* Search loading indicator */}
+          {isSearchLoading && (
+            <div
+              style={{
+                position: 'absolute',
+                right: '8px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                pointerEvents: 'none'
+              }}
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                style={{
+                  animation: 'spin 1s linear infinite'
+                }}
+              >
+                <circle
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  fill="none"
+                  strokeDasharray="32"
+                  strokeDashoffset="32"
+                  strokeLinecap="round"
+                />
+                <style>{`
+                  @keyframes spin {
+                    to { transform: rotate(360deg); }
+                  }
+                `}</style>
+              </svg>
+            </div>
+          )}
+          
+          {/* Context-aware input based on search type */}
+          {searchType !== 'standard' && (
+            <input
+              type="text"
+              placeholder={
+                searchType === 'timeline' ? '时间线查询...' :
+                searchType === 'decisions' ? '决策相关查询...' :
+                searchType === 'changes' ? '变更相关查询...' :
+                searchType === 'how-it-works' ? '工作原理查询...' :
+                searchType === 'by-concept' ? '概念名称...' :
+                searchType === 'by-file' ? '文件路径...' :
+                searchType === 'by-type' ? '类型名称...' : '查询...'
+              }
+              onChange={e => {
+                const value = e.target.value;
+                // Convert search type specific input to keywords array
+                if (value.trim()) {
+                  onKeywordsChange([value.trim()]);
+                } else {
+                  onKeywordsChange([]);
+                }
+              }}
+              style={{
+                padding: '4px 8px',
+                border: '1px solid #ccc',
+                borderRadius: '4px',
+                fontSize: '12px',
+                width: '140px',
+                marginRight: '4px'
+              }}
+            />
           )}
         </div>
         <ThemeToggle
