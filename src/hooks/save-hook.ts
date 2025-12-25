@@ -44,7 +44,7 @@ async function saveHook(input?: PostToolUseInput): Promise<void> {
       sessionId: session_id,
       toolName: tool_name
     });
-    console.log(STANDARD_HOOK_RESPONSE);
+    logger.info('HOOK', STANDARD_HOOK_RESPONSE);
     return;
   }
 
@@ -120,7 +120,7 @@ async function saveHook(input?: PostToolUseInput): Promise<void> {
     });
   }
 
-  console.log(STANDARD_HOOK_RESPONSE);
+  logger.info('HOOK', STANDARD_HOOK_RESPONSE);
 }
 
 // Entry Point

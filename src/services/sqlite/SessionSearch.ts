@@ -1,6 +1,7 @@
 import { Database } from 'bun:sqlite';
 import { TableNameRow } from '../../types/database.js';
 import { DATA_DIR, DB_PATH, ensureDir } from '../../shared/paths.js';
+import { logger } from '../../utils/logger.js';
 import {
   ObservationSearchResult,
   SessionSummarySearchResult,
@@ -60,7 +61,7 @@ export class SessionSearch {
         return;
       }
 
-      console.log('[SessionSearch] Creating FTS5 tables...');
+      logger.info('DB', ' Creating FTS5 tables...');
 
       // Create observations_fts virtual table
       this.db.run(`
@@ -144,9 +145,9 @@ export class SessionSearch {
         END;
       `);
 
-      console.log('[SessionSearch] FTS5 tables created successfully');
+      logger.info('DB', ' FTS5 tables created successfully');
     } catch (error: any) {
-      console.error('[SessionSearch] FTS migration error:', error.message);
+      logger.error('DB', ' FTS migration error:', error.message);
     }
   }
 
@@ -274,7 +275,7 @@ export class SessionSearch {
 
     // Vector search with query text should be handled by ChromaDB
     // This method only supports filter-only queries (query=undefined)
-    console.warn('[SessionSearch] Text search not supported - use ChromaDB for vector search');
+    logger.warn('DB', ' Text search not supported - use ChromaDB for vector search');
     return [];
   }
 
@@ -313,7 +314,7 @@ export class SessionSearch {
 
     // Vector search with query text should be handled by ChromaDB
     // This method only supports filter-only queries (query=undefined)
-    console.warn('[SessionSearch] Text search not supported - use ChromaDB for vector search');
+    logger.warn('DB', ' Text search not supported - use ChromaDB for vector search');
     return [];
   }
 
@@ -499,7 +500,7 @@ export class SessionSearch {
 
     // Vector search with query text should be handled by ChromaDB
     // This method only supports filter-only queries (query=undefined)
-    console.warn('[SessionSearch] Text search not supported - use ChromaDB for vector search');
+    logger.warn('DB', ' Text search not supported - use ChromaDB for vector search');
     return [];
   }
 

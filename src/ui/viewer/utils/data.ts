@@ -4,6 +4,15 @@
  * Optimized for performance with O(n) Set-based deduplication
  */
 
+// Simple logger for client-side utilities
+const utilLogger = {
+  warn: (component: string, message: string, data?: any) => {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn(`[${component}] ${message}`, data || '');
+    }
+  }
+};
+
 /**
  * Safe limit for array operations to prevent UI freezing
  */
@@ -41,7 +50,7 @@ export function mergeAndDeduplicateByProject<T extends { id: number; project?: s
 ): T[] {
   // Safety check for large arrays
   if (!isSafeArraySize(liveItems) || !isSafeArraySize(paginatedItems)) {
-    console.warn('[mergeAndDeduplicateByProject] Array size exceeds safe limit, truncating');
+    utilLogger.warn('DATA', '[mergeAndDeduplicateByProject] Array size exceeds safe limit, truncating');
     return mergeAndDeduplicateByProject(
       truncateArray(liveItems),
       truncateArray(paginatedItems)

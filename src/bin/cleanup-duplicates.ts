@@ -5,14 +5,15 @@
  */
 
 import { SessionStore } from '../services/sqlite/SessionStore.js';
+import { logger } from '../utils/logger.js';
 
 function main() {
-  console.log('Starting duplicate cleanup...\n');
+  logger.info('SYSTEM', 'Starting duplicate cleanup...\n');
 
   const db = new SessionStore();
 
   // Find and delete duplicate observations
-  console.log('Finding duplicate observations...');
+  logger.info('SYSTEM', 'Finding duplicate observations...');
 
   const duplicateObsQuery = db['db'].prepare(`
     SELECT sdk_session_id, title, subtitle, type, COUNT(*) as count, GROUP_CONCAT(id) as ids
@@ -30,7 +31,7 @@ function main() {
     ids: string;
   }>;
 
-  console.log(`Found ${duplicateObs.length} duplicate observation groups\n`);
+  logger.info('SYSTEM', `Found ${duplicateObs.length} duplicate observation groups\n`);
 
   let deletedObs = 0;
   for (const dup of duplicateObs) {
@@ -38,16 +39,20 @@ function main() {
     const keepId = Math.min(...ids);
     const deleteIds = ids.filter(id => id !== keepId);
 
-    console.log(`Observation "${dup.title.substring(0, 60)}..."`);
-    console.log(`  Found ${dup.count} copies, keeping ID ${keepId}, deleting ${deleteIds.length} duplicates`);
+    logger.info('SYSTEM', `Observation "${dup.title.substring(0, 60)}..."`);
+    logger.info('SYSTEM', `  Found ${dup.count} copies, keeping ID ${keepId}, deleting ${deleteIds.length} duplicates`);
 
-    const deleteStmt = db['db'].prepare(`DELETE FROM observations WHERE id IN (${deleteIds.join(',')})`);
-    deleteStmt.run();
-    deletedObs += deleteIds.length;
+    // SECURITY: Use parameterized query to prevent SQL injection
+    if (deleteIds.length > 0) {
+      const placeholders = deleteIds.map(() => '?').join(',');
+      const deleteStmt = db['db'].prepare(`DELETE FROM observations WHERE id IN (${placeholders})`);
+      deleteStmt.run(...deleteIds);
+      deletedObs += deleteIds.length;
+    }
   }
 
   // Find and delete duplicate summaries
-  console.log('\n\nFinding duplicate summaries...');
+  logger.info('SYSTEM', '\n\nFinding duplicate summaries...');
 
   const duplicateSumQuery = db['db'].prepare(`
     SELECT sdk_session_id, request, completed, learned, COUNT(*) as count, GROUP_CONCAT(id) as ids
@@ -65,7 +70,7 @@ function main() {
     ids: string;
   }>;
 
-  console.log(`Found ${duplicateSum.length} duplicate summary groups\n`);
+  logger.info('SYSTEM', `Found ${duplicateSum.length} duplicate summary groups\n`);
 
   let deletedSum = 0;
   for (const dup of duplicateSum) {
@@ -73,23 +78,27 @@ function main() {
     const keepId = Math.min(...ids);
     const deleteIds = ids.filter(id => id !== keepId);
 
-    console.log(`Summary "${dup.request.substring(0, 60)}..."`);
-    console.log(`  Found ${dup.count} copies, keeping ID ${keepId}, deleting ${deleteIds.length} duplicates`);
+    logger.info('SYSTEM', `Summary "${dup.request.substring(0, 60)}..."`);
+    logger.info('SYSTEM', `  Found ${dup.count} copies, keeping ID ${keepId}, deleting ${deleteIds.length} duplicates`);
 
-    const deleteStmt = db['db'].prepare(`DELETE FROM session_summaries WHERE id IN (${deleteIds.join(',')})`);
-    deleteStmt.run();
-    deletedSum += deleteIds.length;
+    // SECURITY: Use parameterized query to prevent SQL injection
+    if (deleteIds.length > 0) {
+      const placeholders = deleteIds.map(() => '?').join(',');
+      const deleteStmt = db['db'].prepare(`DELETE FROM session_summaries WHERE id IN (${placeholders})`);
+      deleteStmt.run(...deleteIds);
+      deletedSum += deleteIds.length;
+    }
   }
 
   db.close();
 
-  console.log('\n' + '='.repeat(60));
-  console.log('Cleanup Complete!');
-  console.log('='.repeat(60));
-  console.log(`🗑️  Deleted: ${deletedObs} duplicate observations`);
-  console.log(`🗑️  Deleted: ${deletedSum} duplicate summaries`);
-  console.log(`🗑️  Total: ${deletedObs + deletedSum} duplicates removed`);
-  console.log('='.repeat(60));
+  logger.info('SYSTEM', '\n' + '='.repeat(60));
+  logger.success('SYSTEM', 'Cleanup Complete!');
+  logger.info('SYSTEM', '='.repeat(60));
+  logger.info('SYSTEM', `🗑️  Deleted: ${deletedObs} duplicate observations`);
+  logger.info('SYSTEM', `🗑️  Deleted: ${deletedSum} duplicate summaries`);
+  logger.info('SYSTEM', `🗑️  Total: ${deletedObs + deletedSum} duplicates removed`);
+  logger.info('SYSTEM', '='.repeat(60));
 }
 
 // Run if executed directly

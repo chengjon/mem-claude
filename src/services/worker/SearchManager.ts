@@ -20,6 +20,41 @@ const COLLECTION_NAME = 'cm__claude-mem';
 const RECENCY_WINDOW_DAYS = 90;
 const RECENCY_WINDOW_MS = RECENCY_WINDOW_DAYS * 24 * 60 * 60 * 1000;
 
+/**
+ * Format search error with context about what operation failed
+ */
+function formatSearchError(operation: string, query: string, error: any): string {
+  const errorDetails = error?.message || String(error);
+  return `Search error during "${operation}"${query ? ` for query: "${query}"` : ''}\n\nDetails: ${errorDetails}`;
+}
+
+/**
+ * Format ChromaDB error with helpful troubleshooting information
+ */
+function formatChromaError(operation: string, error: any): string {
+  const errorDetails = error?.message || String(error);
+
+  // Check for common Chroma errors
+  if (errorDetails.includes('uvx') || errorDetails.includes('python')) {
+    return `Vector search unavailable: ChromaDB not initialized\n\n` +
+           `Operation: ${operation}\n` +
+           `Error: ${errorDetails}\n\n` +
+           `To enable semantic search:\n` +
+           `1. Install uv: https://docs.astral.sh/uv/getting-started/installation/\n` +
+           `2. Restart the worker: npm run worker:restart\n\n` +
+           `Note: You can still use filter-only searches (date ranges, types, files) without a query term.`;
+  }
+
+  if (errorDetails.includes('connection') || errorDetails.includes('ECONNREFUSED')) {
+    return `Vector search unavailable: Cannot connect to ChromaDB server\n\n` +
+           `Operation: ${operation}\n` +
+           `Error: ${errorDetails}\n\n` +
+           `The ChromaDB server may not be running. Try restarting the worker: npm run worker:restart`;
+  }
+
+  return `Vector search error during "${operation}"\n\nDetails: ${errorDetails}`;
+}
+
 export class SearchManager {
   constructor(
     private sessionSearch: SessionSearch,
@@ -332,7 +367,7 @@ export class SearchManager {
         return {
           content: [{
             type: 'text' as const,
-            text: `Search failed: ${error.message}`
+            text: formatSearchError('unified search', query || '<filter-only>', error)
           }],
           isError: true
         };
@@ -628,7 +663,7 @@ export class SearchManager {
         return {
           content: [{
             type: 'text' as const,
-            text: `Timeline query failed: ${error.message}`
+            text: formatSearchError('timeline query', query || String(anchor || ''), error)
           }],
           isError: true
         };
@@ -712,7 +747,7 @@ export class SearchManager {
         return {
           content: [{
             type: 'text' as const,
-            text: `Search failed: ${error.message}`
+            text: formatSearchError('decision search', query || '<all>', error)
           }],
           isError: true
         };
@@ -804,7 +839,7 @@ export class SearchManager {
         return {
           content: [{
             type: 'text' as const,
-            text: `Search failed: ${error.message}`
+            text: formatSearchError('change-related search', '<filter-only>', error)
           }],
           isError: true
         };
@@ -874,7 +909,7 @@ export class SearchManager {
         return {
           content: [{
             type: 'text' as const,
-            text: `Search failed: ${error.message}`
+            text: formatSearchError('how-it-works search', '<filter-only>', error)
           }],
           isError: true
         };
@@ -944,7 +979,7 @@ export class SearchManager {
         return {
           content: [{
             type: 'text' as const,
-            text: `Search failed: ${error.message}`
+            text: formatSearchError('observation search', query || '', error)
           }],
           isError: true
         };
@@ -1014,7 +1049,7 @@ export class SearchManager {
         return {
           content: [{
             type: 'text' as const,
-            text: `Search failed: ${error.message}`
+            text: formatSearchError('session search', query || '', error)
           }],
           isError: true
         };
@@ -1084,7 +1119,7 @@ export class SearchManager {
         return {
           content: [{
             type: 'text' as const,
-            text: `Search failed: ${error.message}`
+            text: formatSearchError('user prompt search', query || '', error)
           }],
           isError: true
         };
@@ -1166,7 +1201,7 @@ export class SearchManager {
         return {
           content: [{
             type: 'text' as const,
-            text: `Search failed: ${error.message}`
+            text: formatSearchError('concept search', concept || '', error)
           }],
           isError: true
         };
@@ -1267,7 +1302,7 @@ export class SearchManager {
         return {
           content: [{
             type: 'text' as const,
-            text: `Search failed: ${error.message}`
+            text: formatSearchError('file search', filePath || '', error)
           }],
           isError: true
         };
@@ -1350,7 +1385,7 @@ export class SearchManager {
         return {
           content: [{
             type: 'text' as const,
-            text: `Search failed: ${error.message}`
+            text: formatSearchError('type search', typeStr || '', error)
           }],
           isError: true
         };
@@ -1484,7 +1519,7 @@ export class SearchManager {
         return {
           content: [{
             type: 'text' as const,
-            text: `Failed to get recent context: ${error.message}`
+            text: formatSearchError('get recent context', project || '', error)
           }],
           isError: true
         };
@@ -1714,7 +1749,7 @@ export class SearchManager {
         return {
           content: [{
             type: 'text' as const,
-            text: `Timeline query failed: ${error.message}`
+            text: formatSearchError('context timeline', String(anchor || ''), error)
           }],
           isError: true
         };
@@ -1967,7 +2002,7 @@ export class SearchManager {
         return {
           content: [{
             type: 'text' as const,
-            text: `Timeline query failed: ${error.message}`
+            text: formatSearchError('timeline by query', query || '', error)
           }],
           isError: true
         };

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude-Mem 搜索功能演示</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f6f8fa;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #24292f;
+            margin-bottom: 24px;
+        }
+        
+        .search-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            border: 1px solid #d0d7de;
+            border-radius: 6px;
+            background: #f6f8fa;
+        }
+        
+        .search-section h3 {
+            margin: 0 0 16px 0;
+            color: #0969da;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .search-form {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        
+        input[type="text"] {
+            flex: 1;
+            min-width: 200px;
+            padding: 8px 12px;
+            border: 1px solid #d0d7de;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        button {
+            padding: 8px 16px;
+            background: #0969da;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        button:hover {
+            background: #1177e6;
+        }
+        
+        button:disabled {
+            background: #8b949e;
+            cursor: not-allowed;
+        }
+        
+        .result {
+            margin-top: 16px;
+            padding: 16px;
+            background: white;
+            border: 1px solid #d0d7de;
+            border-radius: 6px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .loading {
+            color: #656d76;
+            font-style: italic;
+        }
+        
+        .error {
+            color: #d1242f;
+            background: #f6f8fa;
+            padding: 8px;
+            border-radius: 4px;
+            margin-top: 8px;
+        }
+        
+        .api-link {
+            color: #0969da;
+            text-decoration: none;
+            font-size: 12px;
+            margin-top: 8px;
+            display: block;
+        }
+        
+        .api-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Claude-Mem 新搜索功能演示</h1>
+        
+        <div class="search-section">
+            <h3>📅 时间线搜索</h3>
+            <p>搜索包含时间线信息的观察结果</p>
+            <div class="search-form">
+                <input type="text" id="timeline-query" placeholder="输入时间线查询关键词..." value="重构">
+                <button onclick="searchTimeline()">搜索时间线</button>
+            </div>
+            <div id="timeline-result" class="result" style="display: none;"></div>
+            <a href="http://localhost:37777/api/timeline?query=重构&limit=5" class="api-link" target="_blank">直接访问API</a>
+        </div>
+        
+        <div class="search-section">
+            <h3>💡 决策搜索</h3>
+            <p>搜索决策相关的观察结果</p>
+            <div class="search-form">
+                <input type="text" id="decisions-query" placeholder="输入决策查询关键词..." value="选择">
+                <button onclick="searchDecisions()">搜索决策</button>
+            </div>
+            <div id="decisions-result" class="result" style="display: none;"></div>
+            <a href="http://localhost:37777/api/decisions?limit=5" class="api-link" target="_blank">直接访问API</a>
+        </div>
+        
+        <div class="search-section">
+            <h3>🔄 变更搜索</h3>
+            <p>搜索变更相关的观察结果</p>
+            <div class="search-form">
+                <input type="text" id="changes-query" placeholder="输入变更查询关键词..." value="修改">
+                <button onclick="searchChanges()">搜索变更</button>
+            </div>
+            <div id="changes-result" class="result" style="display: none;"></div>
+            <a href="http://localhost:37777/api/changes?limit=5" class="api-link" target="_blank">直接访问API</a>
+        </div>
+        
+        <div class="search-section">
+            <h3>⚙️ 工作原理搜索</h3>
+            <p>搜索"如何工作"相关的观察结果</p>
+            <div class="search-form">
+                <input type="text" id="howitworks-query" placeholder="输入工作原理查询关键词..." value="架构">
+                <button onclick="searchHowItWorks()">搜索工作原理</button>
+            </div>
+            <div id="howitworks-result" class="result" style="display: none;"></div>
+            <a href="http://localhost:37777/api/how-it-works?limit=5" class="api-link" target="_blank">直接访问API</a>
+        </div>
+        
+        <div class="search-section">
+            <h3>🏷️ 按概念搜索</h3>
+            <p>按概念标签搜索观察结果</p>
+            <div class="search-form">
+                <input type="text" id="concept-query" placeholder="输入概念名称..." value="重构">
+                <button onclick="searchByConcept()">按概念搜索</button>
+            </div>
+            <div id="concept-result" class="result" style="display: none;"></div>
+            <a href="http://localhost:37777/api/search/by-concept?concept=重构&limit=5" class="api-link" target="_blank">直接访问API</a>
+        </div>
+        
+        <div class="search-section">
+            <h3>📄 按文件搜索</h3>
+            <p>按文件路径搜索观察结果</p>
+            <div class="search-form">
+                <input type="text" id="file-query" placeholder="输入文件路径..." value="src/">
+                <button onclick="searchByFile()">按文件搜索</button>
+            </div>
+            <div id="file-result" class="result" style="display: none;"></div>
+            <a href="http://localhost:37777/api/search/by-file?filePath=src/&limit=5" class="api-link" target="_blank">直接访问API</a>
+        </div>
+        
+        <div class="search-section">
+            <h3>🏷️ 按类型搜索</h3>
+            <p>按观察类型搜索结果</p>
+            <div class="search-form">
+                <input type="text" id="type-query" placeholder="输入类型名称..." value="decision">
+                <button onclick="searchByType()">按类型搜索</button>
+            </div>
+            <div id="type-result" class="result" style="display: none;"></div>
+            <a href="http://localhost:37777/api/search/by-type?type=decision&limit=5" class="api-link" target="_blank">直接访问API</a>
+        </div>
+    </div>
+
+    <script>
+        async function performSearch(endpoint, query, resultElementId) {
+            const resultElement = document.getElementById(resultElementId);
+            const button = event.target;
+            
+            // Show loading state
+            resultElement.style.display = 'block';
+            resultElement.innerHTML = '<div class="loading">正在搜索...</div>';
+            button.disabled = true;
+            
+            try {
+                const url = query ? 
+                    `http://localhost:37777${endpoint}?query=${encodeURIComponent(query)}&limit=10` :
+                    `http://localhost:37777${endpoint}?limit=10`;
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                resultElement.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                
+            } catch (error) {
+                resultElement.innerHTML = `<div class="error">搜索失败: ${error.message}</div>`;
+            } finally {
+                button.disabled = false;
+            }
+        }
+        
+        function searchTimeline() {
+            const query = document.getElementById('timeline-query').value;
+            performSearch('/api/timeline', query, 'timeline-result');
+        }
+        
+        function searchDecisions() {
+            const query = document.getElementById('decisions-query').value;
+            performSearch('/api/decisions', query, 'decisions-result');
+        }
+        
+        function searchChanges() {
+            const query = document.getElementById('changes-query').value;
+            performSearch('/api/changes', query, 'changes-result');
+        }
+        
+        function searchHowItWorks() {
+            const query = document.getElementById('howitworks-query').value;
+            performSearch('/api/how-it-works', query, 'howitworks-result');
+        }
+        
+        function searchByConcept() {
+            const query = document.getElementById('concept-query').value;
+            performSearch('/api/search/by-concept', query, 'concept-result');
+        }
+        
+        function searchByFile() {
+            const query = document.getElementById('file-query').value;
+            performSearch('/api/search/by-file', query, 'file-result');
+        }
+        
+        function searchByType() {
+            const query = document.getElementById('type-query').value;
+            performSearch('/api/search/by-type', query, 'type-result');
+        }
+        
+        // 添加回车键支持
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const target = e.target;
+                if (target.id === 'timeline-query') searchTimeline();
+                if (target.id === 'decisions-query') searchDecisions();
+                if (target.id === 'changes-query') searchChanges();
+                if (target.id === 'howitworks-query') searchHowItWorks();
+                if (target.id === 'concept-query') searchByConcept();
+                if (target.id === 'file-query') searchByFile();
+                if (target.id === 'type-query') searchByType();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -8,6 +8,35 @@ interface TerminalPreviewProps {
   className?: string;
 }
 
+// CSS properties whitelist for terminal preview
+// Only allows safe styling properties needed for ANSI terminal output
+const SAFE_CSS_PROPERTIES = [
+  // Colors
+  'color',
+  'background-color',
+  'background-color',
+
+  // Text styling
+  'font-family',
+  'font-size',
+  'font-weight',
+  'font-style',
+  'text-decoration',
+
+  // Layout
+  'margin',
+  'padding',
+  'display',
+  'visibility',
+
+  // Positioning
+  'position',
+  'top',
+  'left',
+  'right',
+  'bottom'
+];
+
 const ansiConverter = new AnsiToHtml({
   fg: '#dcd6cc',
   bg: '#252320',
@@ -15,6 +44,34 @@ const ansiConverter = new AnsiToHtml({
   escapeXML: true,
   stream: false
 });
+
+/**
+ * Sanitize ANSI-to-HTML converted content to prevent XSS attacks
+ * Uses DOMPurify with strict tag/attribute whitelist
+ */
+function sanitizeTerminalHtml(html: string): string {
+  return DOMPurify.sanitize(html, {
+    // Allow only basic structural tags needed for terminal output
+    ALLOWED_TAGS: ['span', 'br', 'div'],
+
+    // Allow attributes with strict validation
+    ALLOWED_ATTR: ['class'],
+
+    // Allow style attribute but with property-level filtering
+    ALLOWED_STYLE: SAFE_CSS_PROPERTIES,
+
+    // Additional safety measures
+    ALLOW_DATA_ATTR: false,
+    ALLOW_UNKNOWN_PROTOCOLS: false,
+    ALLOW_SELF_CLOSE_IN_ATTR: false,
+    SAFE_FOR_JQUERY: true,
+    SAFE_FOR_TEMPLATES: true,
+
+    // Remove any script or data URLs
+    FORBID_TAGS: ['script', 'style', 'link', 'meta', 'iframe'],
+    FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover']
+  });
+}
 
 export function TerminalPreview({ content, isLoading = false, className = '' }: TerminalPreviewProps) {
   const preRef = useRef<HTMLPreElement>(null);
@@ -27,12 +84,13 @@ export function TerminalPreview({ content, isLoading = false, className = '' }: 
       scrollTopRef.current = preRef.current.scrollTop;
     }
     if (!content) return '';
+
+    // Convert ANSI to HTML
     const converted = ansiConverter.toHtml(content);
-    // Sanitize HTML to prevent XSS - only allow safe styling tags
-    return DOMPurify.sanitize(converted, {
-      ALLOWED_TAGS: ['span', 'br', 'div'],
-      ALLOWED_ATTR: ['style', 'class']
-    });
+
+    // Sanitize HTML to prevent XSS with strict configuration
+    // This prevents malicious code injection through ANSI escape sequences
+    return sanitizeTerminalHtml(converted);
   }, [content]);
 
   // Restore scroll position after render

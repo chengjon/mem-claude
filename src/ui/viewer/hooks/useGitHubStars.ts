@@ -1,5 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 
+// Simple logger for client-side hooks
+const hookLogger = {
+  error: (component: string, message: string, error?: any) => {
+    console.error(`[${component}] ${message}`, error || '');
+  }
+};
+
 export interface GitHubStarsData {
   stargazers_count: number;
   watchers_count: number;
@@ -31,7 +38,7 @@ export function useGitHubStars(username: string, repo: string): UseGitHubStarsRe
       const data: GitHubStarsData = await response.json();
       setStars(data.stargazers_count);
     } catch (error) {
-      console.error('Failed to fetch GitHub stars:', error);
+      hookLogger.error('GITHUB_STARS', 'Failed to fetch GitHub stars:', error);
       setError(error instanceof Error ? error : new Error('Unknown error'));
     } finally {
       setIsLoading(false);

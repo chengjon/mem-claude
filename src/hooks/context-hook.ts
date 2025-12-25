@@ -122,11 +122,11 @@ const forceColors = process.argv.includes("--colors");
 
 if (stdin.isTTY || forceColors) {
   contextHook(undefined).then((text) => {
-    console.log(text);
+    logger.info('HOOK', text);
     process.exit(0);
   }).catch((error) => {
     logger.error('HOOK', 'Context hook failed in TTY mode', { error: error.message });
-    console.log(''); // Output empty context on failure
+    logger.info('HOOK', ''); // Output empty context on failure
     process.exit(0); // Always exit successfully for context hooks
   });
 } else {
@@ -137,7 +137,7 @@ if (stdin.isTTY || forceColors) {
       const parsed = input.trim() ? JSON.parse(input) : undefined;
       const text = await contextHook(parsed);
 
-      console.log(
+      logger.info('HOOK', 
         JSON.stringify({
           hookSpecificOutput: {
             hookEventName: "SessionStart",
@@ -152,7 +152,7 @@ if (stdin.isTTY || forceColors) {
         sessionId: input?.session_id 
       });
       // Output empty context on error to maintain compatibility
-      console.log(
+      logger.info('HOOK', 
         JSON.stringify({
           hookSpecificOutput: {
             hookEventName: "SessionStart",

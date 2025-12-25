@@ -4,6 +4,13 @@ import { DEFAULT_SETTINGS } from '../constants/settings';
 import { API_ENDPOINTS } from '../constants/api';
 import { TIMING } from '../constants/timing';
 
+// Simple logger for client-side hooks
+const hookLogger = {
+  error: (component: string, message: string, error?: any) => {
+    console.error(`[${component}] ${message}`, error || '');
+  }
+};
+
 export function useSettings() {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [isSaving, setIsSaving] = useState(false);
@@ -41,7 +48,7 @@ export function useSettings() {
         });
       })
       .catch(error => {
-        console.error('Failed to load settings:', error);
+        hookLogger.error('SETTINGS', 'Failed to load settings:', error);
       });
   }, []);
 

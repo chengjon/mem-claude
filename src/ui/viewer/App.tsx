@@ -13,6 +13,18 @@ import { Observation, Summary, UserPrompt, AiResponse, ToolExecution } from './t
 import { mergeAndDeduplicateByProject } from './utils/data';
 import { SEARCH_CONFIG, SearchType } from './constants/config';
 
+// Simple logger for client-side components (browser-compatible)
+const uiLogger = {
+  warn: (component: string, message: string, data?: any) => {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn(`[${component}] ${message}`, data || '');
+    }
+  },
+  error: (component: string, message: string, error?: any) => {
+    console.error(`[${component}] ${message}`, error || '');
+  }
+};
+
 export function App() {
   const [currentFilter, setCurrentFilter] = useState('');
   const [contextPreviewOpen, setContextPreviewOpen] = useState(false);
@@ -127,11 +139,11 @@ export function App() {
           setSearchError(null);
         } else {
           // Search returned null (aborted or validation failed)
-          console.warn('[handleSearchTypeChange] Search returned null');
+          uiLogger.warn('App', ' Search returned null');
         }
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown search error';
-        console.error('[handleSearchTypeChange] Search failed:', errorMessage);
+        uiLogger.error('App', ' Search failed:', errorMessage);
         setSearchError(errorMessage);
         // Keep previous results or show empty state
       }
@@ -170,11 +182,11 @@ export function App() {
           setSearchError(null);
         } else {
           // Search returned null (aborted or validation failed)
-          console.warn('[handleKeywordsChange] Search returned null');
+          uiLogger.warn('App', ' Search returned null');
         }
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown search error';
-        console.error('[handleKeywordsChange] Search failed:', errorMessage);
+        uiLogger.error('App', ' Search failed:', errorMessage);
         setSearchError(errorMessage);
         // Keep previous results or show empty state
       }
@@ -216,7 +228,7 @@ export function App() {
         setPaginatedToolExecutions(prev => [...prev, ...newToolExecutions]);
       }
     } catch (error) {
-      console.error('Failed to load more data:', error);
+      uiLogger.error('App', 'Failed to load more data:', error);
     }
   }, [currentFilter, pagination.observations, pagination.summaries, pagination.prompts, pagination.aiResponses, pagination.toolExecutions]);
 

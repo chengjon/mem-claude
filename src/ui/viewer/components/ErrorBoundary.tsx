@@ -6,6 +6,13 @@
 
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 
+// Simple logger for client-side components
+const uiLogger = {
+  error: (component: string, message: string, error?: any) => {
+    console.error(`[${component}] ${message}`, error || '');
+  }
+};
+
 interface Props {
   children: ReactNode;
   fallback?: ReactNode;

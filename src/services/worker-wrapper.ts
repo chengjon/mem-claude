@@ -27,7 +27,7 @@ let isShuttingDown = false;
 
 function log(msg: string) {
   const timestamp = new Date().toISOString();
-  console.log(`[${timestamp}] [wrapper] ${msg}`);
+  logger.info(`[${timestamp}] [wrapper] ${msg}`);
 }
 
 function spawnInner() {

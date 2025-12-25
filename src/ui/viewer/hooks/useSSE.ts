@@ -3,6 +3,18 @@ import { Observation, Summary, UserPrompt, StreamEvent } from '../types';
 import { API_ENDPOINTS } from '../constants/api';
 import { TIMING } from '../constants/timing';
 
+// Simple logger for client-side hooks (browser-compatible)
+const hookLogger = {
+  info: (component: string, message: string, data?: any) => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[${component}] ${message}`, data || '');
+    }
+  },
+  error: (component: string, message: string, error?: any) => {
+    console.error(`[${component}] ${message}`, error || '');
+  }
+};
+
 export function useSSE() {
   const [observations, setObservations] = useState<Observation[]>([]);
   const [summaries, setSummaries] = useState<Summary[]>([]);
@@ -25,7 +37,7 @@ export function useSSE() {
       eventSourceRef.current = eventSource;
 
       eventSource.onopen = () => {
-        console.log('[SSE] Connected');
+        hookLogger.info('SSE', ' Connected');
         setIsConnected(true);
         // Clear any pending reconnect
         if (reconnectTimeoutRef.current) {
@@ -34,14 +46,14 @@ export function useSSE() {
       };
 
       eventSource.onerror = (error) => {
-        console.error('[SSE] Connection error:', error);
+        hookLogger.error('SSE', ' Connection error:', error);
         setIsConnected(false);
         eventSource.close();
 
         // Reconnect after delay
         reconnectTimeoutRef.current = setTimeout(() => {
           reconnectTimeoutRef.current = undefined; // Clear before reconnecting
-          console.log('[SSE] Attempting to reconnect...');
+          hookLogger.info('SSE', ' Attempting to reconnect...');
           connect();
         }, TIMING.SSE_RECONNECT_DELAY_MS);
       };
@@ -52,7 +64,7 @@ export function useSSE() {
 
           switch (data.type) {
             case 'initial_load':
-              console.log('[SSE] Initial load:', {
+              hookLogger.info('SSE', ' Initial load:', {
                 projects: data.projects?.length || 0
               });
               // Only load projects list - data will come via pagination
@@ -61,7 +73,7 @@ export function useSSE() {
 
             case 'new_observation':
               if (data.observation) {
-                console.log('[SSE] New observation:', data.observation.id);
+                hookLogger.info('SSE', ' New observation:', data.observation.id);
                 setObservations(prev => [data.observation, ...prev]);
               }
               break;
@@ -69,7 +81,7 @@ export function useSSE() {
             case 'new_summary':
               if (data.summary) {
                 const summary = data.summary;
-                console.log('[SSE] New summary:', summary.id);
+                hookLogger.info('SSE', ' New summary:', summary.id);
                 setSummaries(prev => [summary, ...prev]);
               }
               break;
@@ -77,21 +89,21 @@ export function useSSE() {
             case 'new_prompt':
               if (data.prompt) {
                 const prompt = data.prompt;
-                console.log('[SSE] New prompt:', prompt.id);
+                hookLogger.info('SSE', ' New prompt:', prompt.id);
                 setPrompts(prev => [prompt, ...prev]);
               }
               break;
 
             case 'processing_status':
               if (typeof data.isProcessing === 'boolean') {
-                console.log('[SSE] Processing status:', data.isProcessing, 'Queue depth:', data.queueDepth);
+                hookLogger.info('SSE', ' Processing status:', data.isProcessing, 'Queue depth:', data.queueDepth);
                 setIsProcessing(data.isProcessing);
                 setQueueDepth(data.queueDepth || 0);
               }
               break;
           }
         } catch (error) {
-          console.error('[SSE] Failed to parse message:', error);
+          hookLogger.error('SSE', ' Failed to parse message:', error);
         }
       };
     };

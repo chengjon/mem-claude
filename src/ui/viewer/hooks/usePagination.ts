@@ -3,6 +3,13 @@ import { Observation, Summary, UserPrompt, AiResponse, ToolExecution } from '../
 import { UI } from '../constants/ui';
 import { API_ENDPOINTS } from '../constants/api';
 
+// Simple logger for client-side hooks
+const hookLogger = {
+  error: (component: string, message: string, error?: any) => {
+    console.error(`[${component}] ${message}`, error || '');
+  }
+};
+
 interface PaginationState {
   isLoading: boolean;
   hasMore: boolean;
@@ -97,7 +104,7 @@ function usePaginationFor(
 
       return data.items;
     } catch (error) {
-      console.error(`Failed to load ${dataType}:`, error);
+      hookLogger.error('PAGINATION', `Failed to load ${dataType}:`, error);
       setState(prev => ({ ...prev, isLoading: false }));
       return [];
     }

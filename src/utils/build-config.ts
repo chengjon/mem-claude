@@ -5,6 +5,7 @@
 
 import os from 'os';
 import path from 'path';
+import { logger } from './logger.js';
 
 /**
  * Build configuration object containing all path and version information
@@ -56,7 +57,7 @@ export function getBuildConfig(): BuildConfig {
     // Clean author name (remove spaces, special chars for path safety)
     pluginAuthor = pluginAuthor.toLowerCase().replace(/[^a-z0-9-]/g, '-');
   } catch (error) {
-    console.warn('Could not read plugin.json, using defaults');
+    logger.warn('SYSTEM', 'Could not read plugin.json, using defaults');
   }
   
   const currentPluginDir = path.join(pluginDir, pluginAuthor, 'claude-mem');

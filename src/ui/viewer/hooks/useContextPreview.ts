@@ -1,6 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { Settings } from '../types';
 
+// Simple logger for client-side hooks
+const hookLogger = {
+  error: (component: string, message: string, error?: any) => {
+    console.error(`[${component}] ${message}`, error || '');
+  }
+};
+
 interface UseContextPreviewResult {
   preview: string;
   isLoading: boolean;
@@ -29,7 +36,7 @@ export function useContextPreview(settings: Settings): UseContextPreviewResult {
           setSelectedProject(data.projects[0]); // Default to first project
         }
       } catch (err) {
-        console.error('Failed to fetch projects:', err);
+        hookLogger.error('CONTEXT_PREVIEW', 'Failed to fetch projects:', err);
       }
     }
     fetchProjects();

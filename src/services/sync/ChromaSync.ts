@@ -525,10 +525,14 @@ export class ChromaSync {
 
     let offset = 0;
     const limit = 1000; // Large batches, metadata only = fast
+    const MAX_ITERATIONS = 10000; // Safety limit to prevent infinite loops
 
     logger.info('CHROMA_SYNC', 'Fetching existing Chroma document IDs...', { project: this.project });
 
-    while (true) {
+    let iterations = 0;
+    while (iterations < MAX_ITERATIONS) {
+      iterations++;
+
       try {
         const result = await this.client.callTool({
           name: 'chroma_get_documents',
@@ -550,6 +554,11 @@ export class ChromaSync {
         const metadatas = parsed.metadatas || [];
 
         if (metadatas.length === 0) {
+          logger.debug('CHROMA_SYNC', `Finished fetching document IDs after ${iterations} iterations`, {
+            project: this.project,
+            iterations,
+            totalDocuments: observationIds.size + summaryIds.size + promptIds.size
+          });
           break; // No more documents
         }
 
@@ -579,8 +588,20 @@ export class ChromaSync {
       }
     }
 
+    // Safety check: if we hit the iteration limit, log a warning
+    if (iterations >= MAX_ITERATIONS) {
+      logger.warn('CHROMA_SYNC', 'Reached maximum iteration limit while fetching document IDs', {
+        project: this.project,
+        iterations: MAX_ITERATIONS,
+        observationIds: observationIds.size,
+        summaryIds: summaryIds.size,
+        promptIds: promptIds.size
+      });
+    }
+
     logger.info('CHROMA_SYNC', 'Existing IDs fetched', {
       project: this.project,
+      iterations,
       observations: observationIds.size,
       summaries: summaryIds.size,
       prompts: promptIds.size

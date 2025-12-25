@@ -235,7 +235,7 @@ export async function generateContext(input?: ContextInput, useColors: boolean =
       } catch (unlinkError) {
         // Marker might not exist
       }
-      console.error('Native module rebuild needed - restart Claude Code to auto-fix');
+      logger.error('Native module rebuild needed - restart Claude Code to auto-fix');
       return '';
     }
     throw error;

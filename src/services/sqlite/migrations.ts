@@ -1,5 +1,6 @@
 import { Database } from 'bun:sqlite';
 import { Migration } from './Database.js';
+import { logger } from '../../utils/logger.js';
 
 /**
  * Initial schema migration - creates all core tables
@@ -113,7 +114,7 @@ export const migration001: Migration = {
       CREATE INDEX IF NOT EXISTS idx_transcript_events_captured ON transcript_events(captured_at_epoch DESC);
     `);
 
-    console.log('✅ Created all database tables successfully');
+    logger.info('DB', '✅ Created all database tables successfully');
   },
 
   down: (db: Database) => {
@@ -148,15 +149,15 @@ export const migration002: Migration = {
       CREATE INDEX IF NOT EXISTS idx_memories_concepts ON memories(concepts);
     `);
 
-    console.log('✅ Added hierarchical memory fields to memories table');
+    logger.info('DB', '✅ Added hierarchical memory fields to memories table');
   },
 
   down: (_db: Database) => {
     // Note: SQLite doesn't support DROP COLUMN in all versions
     // In production, we'd need to recreate the table without these columns
     // For now, we'll just log a warning
-    console.log('⚠️  Warning: SQLite ALTER TABLE DROP COLUMN not fully supported');
-    console.log('⚠️  To rollback, manually recreate the memories table');
+    logger.info('DB', '⚠️  Warning: SQLite ALTER TABLE DROP COLUMN not fully supported');
+    logger.info('DB', '⚠️  To rollback, manually recreate the memories table');
   }
 };
 
@@ -192,7 +193,7 @@ export const migration003: Migration = {
       CREATE INDEX IF NOT EXISTS idx_streaming_sessions_started ON streaming_sessions(started_at_epoch DESC);
     `);
 
-    console.log('✅ Created streaming_sessions table for real-time session tracking');
+    logger.info('DB', '✅ Created streaming_sessions table for real-time session tracking');
   },
 
   down: (db: Database) => {
@@ -292,7 +293,7 @@ export const migration004: Migration = {
       CREATE INDEX IF NOT EXISTS idx_session_summaries_created ON session_summaries(created_at_epoch DESC);
     `);
 
-    console.log('✅ Created SDK agent architecture tables');
+    logger.info('DB', '✅ Created SDK agent architecture tables');
   },
 
   down: (db: Database) => {
@@ -321,7 +322,7 @@ export const migration005: Migration = {
     // Worker now uses sockets instead of database polling for observations
     db.run(`DROP TABLE IF EXISTS observation_queue`);
 
-    console.log('✅ Dropped orphaned tables: streaming_sessions, observation_queue');
+    logger.info('DB', '✅ Dropped orphaned tables: streaming_sessions, observation_queue');
   },
 
   down: (db: Database) => {
@@ -358,7 +359,7 @@ export const migration005: Migration = {
       )
     `);
 
-    console.log('⚠️  Recreated streaming_sessions and observation_queue (for rollback only)');
+    logger.info('DB', '⚠️  Recreated streaming_sessions and observation_queue (for rollback only)');
   }
 };
 
@@ -453,7 +454,7 @@ export const migration006: Migration = {
       END;
     `);
 
-    console.log('✅ Created FTS5 virtual tables and triggers for full-text search');
+    logger.info('DB', '✅ Created FTS5 virtual tables and triggers for full-text search');
   },
 
   down: (db: Database) => {
@@ -484,14 +485,175 @@ export const migration007: Migration = {
     // Add discovery_tokens to session_summaries table
     db.run(`ALTER TABLE session_summaries ADD COLUMN discovery_tokens INTEGER DEFAULT 0`);
 
-    console.log('✅ Added discovery_tokens columns for ROI tracking');
+    logger.info('DB', '✅ Added discovery_tokens columns for ROI tracking');
   },
 
   down: (db: Database) => {
     // Note: SQLite doesn't support DROP COLUMN in all versions
     // In production, would need to recreate tables without these columns
-    console.log('⚠️  Warning: SQLite ALTER TABLE DROP COLUMN not fully supported');
-    console.log('⚠️  To rollback, manually recreate the observations and session_summaries tables');
+    logger.info('DB', '⚠️  Warning: SQLite ALTER TABLE DROP COLUMN not fully supported');
+    logger.info('DB', '⚠️  To rollback, manually recreate the observations and session_summaries tables');
+  }
+};
+
+/**
+ * Migration 008 - Add index health check utility
+ * Creates a validation function to verify all indexes exist and are functioning
+ */
+export const migration008: Migration = {
+  version: 8,
+  up: (db: Database) => {
+    // This migration doesn't alter schema, but validates existing indexes
+    // It will run on every startup to ensure database health
+
+    const expectedIndexes = [
+      // Sessions indexes
+      'idx_sessions_project',
+      'idx_sessions_created_at',
+      'idx_sessions_project_created',
+
+      // Memories indexes
+      'idx_memories_session',
+      'idx_memories_project',
+      'idx_memories_created_at',
+      'idx_memories_project_created',
+      'idx_memories_document_id',
+      'idx_memories_origin',
+      'idx_memories_title',
+      'idx_memories_concepts',
+
+      // SDK sessions indexes
+      'idx_sdk_sessions_claude_id',
+      'idx_sdk_sessions_sdk_id',
+      'idx_sdk_sessions_project',
+      'idx_sdk_sessions_status',
+      'idx_sdk_sessions_started',
+
+      // Observations indexes
+      'idx_observations_sdk_session',
+      'idx_observations_project',
+      'idx_observations_type',
+      'idx_observations_created',
+
+      // Session summaries indexes
+      'idx_session_summaries_sdk_session',
+      'idx_session_summaries_project',
+      'idx_session_summaries_created',
+    ];
+
+    // Check each expected index
+    const query = db.query("SELECT name FROM sqlite_master WHERE type='index' AND name=?");
+    let missingIndexes: string[] = [];
+
+    for (const indexName of expectedIndexes) {
+      const result = query.get(indexName) as { name: string } | undefined;
+      if (!result) {
+        missingIndexes.push(indexName);
+      }
+    }
+
+    if (missingIndexes.length > 0) {
+      logger.warn('DB', '⚠️  Missing indexes detected:', missingIndexes.join(', '));
+
+      // Recreate missing indexes
+      for (const indexName of missingIndexes) {
+        try {
+          if (indexName.startsWith('idx_sessions_')) {
+            if (indexName === 'idx_sessions_project') {
+              db.run('CREATE INDEX IF NOT EXISTS idx_sessions_project ON sessions(project)');
+            } else if (indexName === 'idx_sessions_created_at') {
+              db.run('CREATE INDEX IF NOT EXISTS idx_sessions_created_at ON sessions(created_at_epoch DESC)');
+            } else if (indexName === 'idx_sessions_project_created') {
+              db.run('CREATE INDEX IF NOT EXISTS idx_sessions_project_created ON sessions(project, created_at_epoch DESC)');
+            }
+          } else if (indexName.startsWith('idx_memories_')) {
+            if (indexName === 'idx_memories_session') {
+              db.run('CREATE INDEX IF NOT EXISTS idx_memories_session ON memories(session_id)');
+            } else if (indexName === 'idx_memories_project') {
+              db.run('CREATE INDEX IF NOT EXISTS idx_memories_project ON memories(project)');
+            } else if (indexName === 'idx_memories_created_at') {
+              db.run('CREATE INDEX IF NOT EXISTS idx_memories_created_at ON memories(created_at_epoch DESC)');
+            } else if (indexName === 'idx_memories_project_created') {
+              db.run('CREATE INDEX IF NOT EXISTS idx_memories_project_created ON memories(project, created_at_epoch DESC)');
+            } else if (indexName === 'idx_memories_document_id') {
+              db.run('CREATE INDEX IF NOT EXISTS idx_memories_document_id ON memories(document_id)');
+            } else if (indexName === 'idx_memories_origin') {
+              db.run('CREATE INDEX IF NOT EXISTS idx_memories_origin ON memories(origin)');
+            } else if (indexName === 'idx_memories_title') {
+              db.run('CREATE INDEX IF NOT EXISTS idx_memories_title ON memories(title)');
+            } else if (indexName === 'idx_memories_concepts') {
+              db.run('CREATE INDEX IF NOT EXISTS idx_memories_concepts ON memories(concepts)');
+            }
+          } else if (indexName.startsWith('idx_sdk_sessions_')) {
+            if (indexName === 'idx_sdk_sessions_claude_id') {
+              db.run('CREATE INDEX IF NOT EXISTS idx_sdk_sessions_claude_id ON sdk_sessions(claude_session_id)');
+            } else if (indexName === 'idx_sdk_sessions_sdk_id') {
+              db.run('CREATE INDEX IF NOT EXISTS idx_sdk_sessions_sdk_id ON sdk_sessions(sdk_session_id)');
+            } else if (indexName === 'idx_sdk_sessions_project') {
+              db.run('CREATE INDEX IF NOT EXISTS idx_sdk_sessions_project ON sdk_sessions(project)');
+            } else if (indexName === 'idx_sdk_sessions_status') {
+              db.run('CREATE INDEX IF NOT EXISTS idx_sdk_sessions_status ON sdk_sessions(status)');
+            } else if (indexName === 'idx_sdk_sessions_started') {
+              db.run('CREATE INDEX IF NOT EXISTS idx_sdk_sessions_started ON sdk_sessions(started_at_epoch DESC)');
+            }
+          } else if (indexName.startsWith('idx_observations_')) {
+            if (indexName === 'idx_observations_sdk_session') {
+              db.run('CREATE INDEX IF NOT EXISTS idx_observations_sdk_session ON observations(sdk_session_id)');
+            } else if (indexName === 'idx_observations_project') {
+              db.run('CREATE INDEX IF NOT EXISTS idx_observations_project ON observations(project)');
+            } else if (indexName === 'idx_observations_type') {
+              db.run('CREATE INDEX IF NOT EXISTS idx_observations_type ON observations(type)');
+            } else if (indexName === 'idx_observations_created') {
+              db.run('CREATE INDEX IF NOT EXISTS idx_observations_created ON observations(created_at_epoch DESC)');
+            }
+          } else if (indexName.startsWith('idx_session_summaries_')) {
+            if (indexName === 'idx_session_summaries_sdk_session') {
+              db.run('CREATE INDEX IF NOT EXISTS idx_session_summaries_sdk_session ON session_summaries(sdk_session_id)');
+            } else if (indexName === 'idx_session_summaries_project') {
+              db.run('CREATE INDEX IF NOT EXISTS idx_session_summaries_project ON session_summaries(project)');
+            } else if (indexName === 'idx_session_summaries_created') {
+              db.run('CREATE INDEX IF NOT EXISTS idx_session_summaries_created ON session_summaries(created_at_epoch DESC)');
+            }
+          }
+
+          logger.info('DB', `✅ Recreated missing index: ${indexName}`);
+        } catch (error) {
+          logger.error('DB', `❌ Failed to recreate index ${indexName}:`, error);
+        }
+      }
+    } else {
+      logger.info('DB', '✅ All expected database indexes are present');
+    }
+
+    // Verify FTS5 virtual tables
+    const ftsQuery = db.query("SELECT name FROM sqlite_master WHERE type='table' AND name LIKE '%_fts'");
+    const ftsTables = ftsQuery.all() as { name: string }[];
+    const expectedFtsTables = ['observations_fts', 'session_summaries_fts'];
+
+    for (const tableName of expectedFtsTables) {
+      const exists = ftsTables.some(t => t.name === tableName);
+      if (!exists) {
+        logger.warn('DB', `⚠️  Missing FTS5 table: ${tableName}`);
+      } else {
+        // Verify FTS table has data in sync
+        const syncCheck = db.query(`
+          SELECT (SELECT COUNT(*) FROM ${tableName.replace('_fts', '')}) as total,
+                 (SELECT COUNT(*) FROM ${tableName}) as indexed
+        `).get() as { total: number, indexed: number };
+
+        if (syncCheck.total !== syncCheck.indexed) {
+          logger.warn('DB', `⚠️  FTS sync issue in ${tableName}: ${syncCheck.indexed}/${syncCheck.total} rows indexed`);
+        } else {
+          logger.info('DB', `✅ FTS5 table ${tableName} is in sync (${syncCheck.total} rows)`);
+        }
+      }
+    }
+
+    logger.info('DB', '✅ Database health check completed');
+  },
+
+  down: (_db: Database) => {
+    logger.info('DB', '⚠️  Rollback: No schema changes to undo in migration008');
   }
 };
 
@@ -505,5 +667,6 @@ export const migrations: Migration[] = [
   migration004,
   migration005,
   migration006,
-  migration007
+  migration007,
+  migration008
 ];

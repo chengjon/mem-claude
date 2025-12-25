@@ -43,7 +43,7 @@ async function cleanupHook(input?: SessionEndInput): Promise<void> {
       sessionId: session_id,
       reason
     });
-    console.log('{"continue": true, "suppressOutput": true}');
+    logger.info('HOOK', '{"continue": true, "suppressOutput": true}');
     process.exit(0);
     return;
   }
@@ -129,7 +129,7 @@ async function cleanupHook(input?: SessionEndInput): Promise<void> {
     });
   }
 
-  console.log('{"continue": true, "suppressOutput": true}');
+  logger.info('HOOK', '{"continue": true, "suppressOutput": true}');
   process.exit(0);
 }
 
@@ -138,7 +138,7 @@ if (stdin.isTTY) {
   // Running manually
   cleanupHook(undefined).catch((error) => {
     logger.error('HOOK', 'Cleanup hook failed in manual mode', { error: error.message });
-    console.log('{"continue": true, "suppressOutput": true}');
+    logger.info('HOOK', '{"continue": true, "suppressOutput": true}');
     process.exit(0);
   });
 } else {
@@ -154,7 +154,7 @@ if (stdin.isTTY) {
         sessionId: input?.session_id 
       });
       // Always exit successfully for cleanup hooks
-      console.log('{"continue": true, "suppressOutput": true}');
+      logger.info('HOOK', '{"continue": true, "suppressOutput": true}');
       process.exit(0);
     }
   });

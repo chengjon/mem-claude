@@ -8,6 +8,7 @@ import { readFileSync, readdirSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
 import { SessionStore } from '../services/sqlite/SessionStore.js';
+import { logger } from '../utils/logger.js';
 
 interface ObservationData {
   type: string;
@@ -46,10 +47,10 @@ function buildTimestampMap(): TimestampMapping {
   const transcriptDir = join(homedir(), '.claude', 'projects', '-Users-alexnewman-Scripts-claude-mem');
   const map: TimestampMapping = {};
 
-  console.log(`Reading transcript files from ${transcriptDir}...`);
+  logger.info('SYSTEM', `Reading transcript files from ${transcriptDir}...`);
 
   const files = readdirSync(transcriptDir).filter(f => f.endsWith('.jsonl'));
-  console.log(`Found ${files.length} transcript files`);
+  logger.info('SYSTEM', `Found ${files.length} transcript files`);
 
   for (const filename of files) {
     const filepath = join(transcriptDir, filename);
@@ -80,7 +81,7 @@ function buildTimestampMap(): TimestampMapping {
     }
   }
 
-  console.log(`Built timestamp map with ${Object.keys(map).length} unique seconds`);
+  logger.info('SYSTEM', `Built timestamp map with ${Object.keys(map).length} unique seconds`);
   return map;
 }
 
@@ -144,7 +145,7 @@ function parseObservation(xml: string): ObservationData | null {
 
     return observation;
   } catch (e) {
-    console.error('Error parsing observation:', e);
+    logger.error('SYSTEM', 'Error parsing observation:', e);
     return null;
   }
 }
@@ -175,7 +176,7 @@ function parseSummary(xml: string): SummaryData | null {
 
     return summary;
   } catch (e) {
-    console.error('Error parsing summary:', e);
+    logger.error('SYSTEM', 'Error parsing summary:', e);
     return null;
   }
 }
@@ -198,7 +199,7 @@ function extractTimestamp(commentLine: string): string | null {
  * Main import function
  */
 function main() {
-  console.log('Starting XML observation import...\n');
+  logger.info('SYSTEM', 'Starting XML observation import...\n');
 
   // Build timestamp map
   const timestampMap = buildTimestampMap();
@@ -207,7 +208,7 @@ function main() {
   const db = new SessionStore();
 
   // Create SDK sessions for all unique Claude Code sessions
-  console.log('\nCreating SDK sessions for imported data...');
+  logger.info('SYSTEM', '\nCreating SDK sessions for imported data...');
   const claudeSessionToSdkSession = new Map<string, string>();
 
   for (const sessionMeta of Object.values(timestampMap)) {
@@ -246,16 +247,16 @@ function main() {
     }
   }
 
-  console.log(`Prepared ${claudeSessionToSdkSession.size} SDK sessions\n`);
+  logger.info('SYSTEM', `Prepared ${claudeSessionToSdkSession.size} SDK sessions\n`);
 
   // Read XML file
   const xmlPath = join(process.cwd(), 'actual_xml_only_with_timestamps.xml');
-  console.log(`Reading XML file: ${xmlPath}`);
+  logger.info('SYSTEM', `Reading XML file: ${xmlPath}`);
   const xmlContent = readFileSync(xmlPath, 'utf-8');
 
   // Split into blocks by comment markers
   const blocks = xmlContent.split(/(?=<!-- Block \d+)/);
-  console.log(`Found ${blocks.length} blocks in XML file\n`);
+  logger.info('SYSTEM', `Found ${blocks.length} blocks in XML file\n`);
 
   let importedObs = 0;
   let importedSum = 0;
@@ -281,7 +282,7 @@ function main() {
     if (!sessionMeta) {
       noSession++;
       if (noSession <= 5) {
-        console.log(`⚠️  No session found for timestamp: ${timestampIso}`);
+        logger.info('SYSTEM', `⚠️  No session found for timestamp: ${timestampIso}`);
       }
       skipped++;
       continue;
@@ -317,10 +318,10 @@ function main() {
         importedObs++;
 
         if (importedObs % 50 === 0) {
-          console.log(`Imported ${importedObs} observations...`);
+          logger.info('SYSTEM', `Imported ${importedObs} observations...`);
         }
       } catch (e) {
-        console.error(`Error storing observation:`, e);
+        logger.error('SYSTEM', `Error storing observation:`, e);
         skipped++;
       }
       continue;
@@ -349,10 +350,10 @@ function main() {
         importedSum++;
 
         if (importedSum % 10 === 0) {
-          console.log(`Imported ${importedSum} summaries...`);
+          logger.info('SYSTEM', `Imported ${importedSum} summaries...`);
         }
       } catch (e) {
-        console.error(`Error storing summary:`, e);
+        logger.error('SYSTEM', `Error storing summary:`, e);
         skipped++;
       }
       continue;
@@ -364,16 +365,16 @@ function main() {
 
   db.close();
 
-  console.log('\n' + '='.repeat(60));
-  console.log('Import Complete!');
-  console.log('='.repeat(60));
-  console.log(`✓ Imported: ${importedObs} observations`);
-  console.log(`✓ Imported: ${importedSum} summaries`);
-  console.log(`✓ Total: ${importedObs + importedSum} items`);
-  console.log(`⊘ Skipped: ${skipped} blocks (not full observations or summaries)`);
-  console.log(`⊘ Duplicates skipped: ${duplicateObs} observations, ${duplicateSum} summaries`);
-  console.log(`⚠️  No session: ${noSession} blocks (timestamp not in transcripts)`);
-  console.log('='.repeat(60));
+  logger.info('SYSTEM', '\n' + '='.repeat(60));
+  logger.info('SYSTEM', 'Import Complete!');
+  logger.info('SYSTEM', '='.repeat(60));
+  logger.info('SYSTEM', `✓ Imported: ${importedObs} observations`);
+  logger.info('SYSTEM', `✓ Imported: ${importedSum} summaries`);
+  logger.info('SYSTEM', `✓ Total: ${importedObs + importedSum} items`);
+  logger.info('SYSTEM', `⊘ Skipped: ${skipped} blocks (not full observations or summaries)`);
+  logger.info('SYSTEM', `⊘ Duplicates skipped: ${duplicateObs} observations, ${duplicateSum} summaries`);
+  logger.info('SYSTEM', `⚠️  No session: ${noSession} blocks (timestamp not in transcripts)`);
+  logger.info('SYSTEM', '='.repeat(60));
 }
 
 // Run if executed directly

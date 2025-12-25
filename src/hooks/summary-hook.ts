@@ -48,7 +48,7 @@ async function summaryHook(input?: StopInput): Promise<void> {
       sessionId: session_id,
       cwd
     });
-    console.log(STANDARD_HOOK_RESPONSE);
+    logger.info('HOOK', STANDARD_HOOK_RESPONSE);
     return;
   }
 
@@ -167,7 +167,7 @@ async function summaryHook(input?: StopInput): Promise<void> {
     });
   }
 
-  console.log(STANDARD_HOOK_RESPONSE);
+  logger.info('HOOK', STANDARD_HOOK_RESPONSE);
 }
 
 // Entry Point

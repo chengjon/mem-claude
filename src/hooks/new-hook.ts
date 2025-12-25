@@ -38,7 +38,7 @@ async function newHook(input?: UserPromptSubmitInput): Promise<void> {
       project,
       cwd
     });
-    console.log(STANDARD_HOOK_RESPONSE);
+    logger.success('HOOK', 'Session initialized');
     return;
   }
 
@@ -116,7 +116,7 @@ async function newHook(input?: UserPromptSubmitInput): Promise<void> {
       sessionId: session_id,
       project
     });
-    console.log(STANDARD_HOOK_RESPONSE);
+    logger.success('HOOK', 'Session initialized');
     return;
   }
 
@@ -125,12 +125,12 @@ async function newHook(input?: UserPromptSubmitInput): Promise<void> {
 
   // Check if prompt was entirely private (worker performs privacy check)
   if (initResult.skipped && initResult.reason === 'private') {
-    console.error(`[new-hook] Session ${sessionDbId}, prompt #${promptNumber} (fully private - skipped)`);
-    console.log(STANDARD_HOOK_RESPONSE);
+    logger.debug('HOOK', `Session ${sessionDbId}, prompt #${promptNumber} (fully private - skipped)`);
+    logger.success('HOOK', 'Session initialized');
     return;
   }
 
-  console.error(`[new-hook] Session ${sessionDbId}, prompt #${promptNumber}`);
+  logger.error('HOOK', `Session ${sessionDbId}, prompt #${promptNumber}`);
 
   // Strip leading slash from commands for memory agent
   // /review 101 → review 101 (more semantic for observations)
@@ -206,7 +206,7 @@ async function newHook(input?: UserPromptSubmitInput): Promise<void> {
     });
   }
 
-  console.log(STANDARD_HOOK_RESPONSE);
+  logger.success('HOOK', 'Session initialized');
 }
 
 // Entry Point

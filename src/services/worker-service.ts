@@ -323,22 +323,21 @@ export class WorkerService {
 
 
   /**
-   * Clean up orphaned chroma-mcp processes from previous worker sessions
-   * Prevents process accumulation and memory leaks
+   * Get PIDs of all running chroma-mcp processes
+   * Used for both detection and cleanup verification
    */
-  private async cleanupOrphanedProcesses(): Promise<void> {
-    try {
-      const isWindows = process.platform === 'win32';
-      const pids: number[] = [];
+  private async getChromaMcpPids(): Promise<number[]> {
+    const isWindows = process.platform === 'win32';
+    const pids: number[] = [];
 
+    try {
       if (isWindows) {
         // Windows: Use PowerShell Get-CimInstance to find chroma-mcp processes
         const cmd = `powershell -Command "Get-CimInstance Win32_Process | Where-Object { $_.Name -like '*python*' -and $_.CommandLine -like '*chroma-mcp*' } | Select-Object -ExpandProperty ProcessId"`;
         const { stdout } = await execAsync(cmd, { timeout: 5000 });
 
         if (!stdout.trim()) {
-          logger.debug('SYSTEM', 'No orphaned chroma-mcp processes found (Windows)');
-          return;
+          return pids;
         }
 
         const pidStrings = stdout.trim().split('\n');
@@ -354,8 +353,7 @@ export class WorkerService {
         const { stdout } = await execAsync('ps aux | grep "chroma-mcp" | grep -v grep || true');
 
         if (!stdout.trim()) {
-          logger.debug('SYSTEM', 'No orphaned chroma-mcp processes found (Unix)');
-          return;
+          return pids;
         }
 
         const lines = stdout.trim().split('\n');
@@ -370,8 +368,59 @@ export class WorkerService {
           }
         }
       }
+    } catch (error) {
+      logger.warn('SYSTEM', 'Failed to get chroma-mcp PIDs', {}, error as Error);
+    }
+
+    return pids;
+  }
+
+  /**
+   * Wait for processes to exit after termination attempt
+   * Polls process status until timeout or all processes confirmed dead
+   */
+  private async waitForProcessesExit(expectedPids: number[], timeoutMs: number = 2000): Promise<number[]> {
+    const startTime = Date.now();
+    const checkInterval = 200; // Check every 200ms
+
+    while (Date.now() - startTime < timeoutMs) {
+      const currentPids = await this.getChromaMcpPids();
+      const stillRunning = currentPids.filter(pid => expectedPids.includes(pid));
+
+      if (stillRunning.length === 0) {
+        logger.debug('SYSTEM', 'All processes terminated successfully');
+        return [];
+      }
+
+      await new Promise(resolve => setTimeout(resolve, checkInterval));
+    }
+
+    // Timeout reached - return remaining processes
+    const remaining = await this.getChromaMcpPids();
+    const survivors = remaining.filter(pid => expectedPids.includes(pid));
+
+    if (survivors.length > 0) {
+      logger.warn('SYSTEM', 'Processes still running after termination timeout', {
+        count: survivors.length,
+        timeout: timeoutMs,
+        pids: survivors
+      });
+    }
+
+    return survivors;
+  }
+
+  /**
+   * Clean up orphaned chroma-mcp processes from previous worker sessions
+   * Prevents process accumulation and memory leaks
+   */
+  private async cleanupOrphanedProcesses(): Promise<void> {
+    try {
+      const isWindows = process.platform === 'win32';
+      const pids = await this.getChromaMcpPids();
 
       if (pids.length === 0) {
+        logger.debug('SYSTEM', 'No orphaned chroma-mcp processes found');
         return;
       }
 
@@ -399,7 +448,18 @@ export class WorkerService {
         await execAsync(`kill ${pids.join(' ')}`);
       }
 
-      logger.info('SYSTEM', 'Orphaned processes cleaned up', { count: pids.length });
+      // Wait for processes to actually exit and verify cleanup
+      const survivors = await this.waitForProcessesExit(pids, 2000);
+
+      if (survivors.length === 0) {
+        logger.info('SYSTEM', 'Orphaned processes cleaned up successfully', { count: pids.length });
+      } else {
+        logger.warn('SYSTEM', 'Some orphaned processes survived cleanup', {
+          original: pids.length,
+          survivors: survivors.length,
+          pids: survivors
+        });
+      }
     } catch (error) {
       // Non-fatal - log and continue
       logger.warn('SYSTEM', 'Failed to cleanup orphaned processes', {}, error as Error);

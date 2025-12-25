@@ -128,7 +128,7 @@ export class DatabaseManager {
 
     for (const migration of this.migrations) {
       if (migration.version > maxApplied) {
-        console.log(`Applying migration ${migration.version}...`);
+        logger.info(`Applying migration ${migration.version}...`);
 
         const transaction = this.db.transaction(() => {
           migration.up(this.db!);
@@ -138,7 +138,7 @@ export class DatabaseManager {
         });
 
         transaction();
-        console.log(`Migration ${migration.version} applied successfully`);
+        logger.info(`Migration ${migration.version} applied successfully`);
       }
     }
   }

@@ -98,7 +98,7 @@ async function userMessageHook(): Promise<void> {
 }
 
 function showContextLoadedMessage(context: string, port: number, project: string): void {
-  console.error(
+  logger.error('HOOK', 
     "\n\n📝 Claude-Mem Context Loaded\n" +
     "   ℹ️  Note: This appears as stderr but is informational only\n\n" +
     context +
@@ -110,7 +110,7 @@ function showContextLoadedMessage(context: string, port: number, project: string
 
 function showFirstTimeSetupMessage(): void {
   // Context not available yet - likely first run or worker starting up
-  console.error(`
+  logger.error('HOOK', `
 ---
 🎉  Note: This appears under Plugin Hook Error, but it's not an error. That's the only option for
    user messages in Claude Code UI until a better method is provided.
