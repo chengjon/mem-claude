@@ -39,7 +39,8 @@ export function getBunPath(): string | null {
         join(homedir(), '.bun', 'bin', 'bun'),
         '/usr/local/bin/bun',
         '/opt/homebrew/bin/bun', // Apple Silicon Homebrew
-        '/home/linuxbrew/.linuxbrew/bin/bun' // Linux Homebrew
+        '/home/linuxbrew/.linuxbrew/bin/bun', // Linux Homebrew
+        '/snap/bin/bun' // Linux Snap (common on Ubuntu/WSL)
       ];
 
   for (const bunPath of bunPaths) {
