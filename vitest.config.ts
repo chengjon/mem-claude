@@ -11,5 +11,21 @@ export default defineConfig({
       'tests/strip-memory-tags.test.ts',
       'tests/user-prompt-tag-stripping.test.ts'
     ],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      exclude: [
+        'node_modules/',
+        'tests/',
+        'plugin/',
+        '*.config.ts',
+        'scripts/'
+      ],
+      // Set reasonable thresholds
+      lines: 70,
+      functions: 70,
+      branches: 65,
+      statements: 70
+    }
   },
 });
