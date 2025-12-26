@@ -92,6 +92,59 @@ Claude-mem is designed with a clean separation between open-source core function
 
 This architecture preserves the open-source nature of the project while enabling sustainable development through optional paid features.
 
+## Working Guidelines
+
+**CRITICAL: Always Fix Problems at the Source Code Level**
+
+When encountering issues with the installed plugin, follow these rules:
+
+### ✅ DO:
+- **Modify source code in this repository** - Fix problems in `src/`, `scripts/`, `plugin/.claude-plugin/`, etc.
+- **Update build/sync scripts** - Ensure `scripts/sync-marketplace.cjs` correctly handles installation
+- **Test fixes locally** - Use `npm run build-and-sync` to verify fixes work
+- **Commit changes to Git** - Push fixes to GitHub so others benefit
+- **Think about future installations** - Ensure fixes work for new users installing from GitHub
+
+### ❌ DON'T:
+- **Directly modify installed files** - Never edit files in `~/.claude/plugins/` directly
+- **Fix only the local installation** - Manual fixes to installed plugins won't persist
+- **Ignore the root cause** - If installation process has a bug, fix the script, not the result
+- **Make one-off changes** - Every fix should be in source code for the next release
+
+### Rationale
+
+When you fix problems by modifying installed files:
+- ❌ Fixes are lost when users run `npm run build-and-sync`
+- ❌ New installations from GitHub will still have the same bugs
+- ❌ Other users don't benefit from your fixes
+- ❌ No audit trail of what was changed and why
+
+When you fix problems by modifying source code:
+- ✅ Fixes persist through rebuilds and reinstallation
+- ✅ All users benefit when they pull from GitHub
+- ✅ Changes are tracked in Git history
+- ✅ Installation process improves over time
+
+### Example
+
+**Wrong approach:**
+```bash
+# Directly editing installed plugin configuration
+vim ~/.claude/plugins/installed_plugins.json
+# This fix will be lost on next sync!
+```
+
+**Correct approach:**
+```bash
+# Edit the sync script to properly update configuration
+vim scripts/sync-marketplace.cjs
+# Test, commit, and push to GitHub
+npm run build-and-sync
+git add scripts/sync-marketplace.cjs
+git commit -m "fix: Update installed_plugins.json during sync"
+git push
+```
+
 # Important
 
 No need to edit the changelog ever, it's generated automatically.

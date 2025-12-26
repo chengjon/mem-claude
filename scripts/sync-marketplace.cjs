@@ -7,7 +7,7 @@
  */
 
 const { execSync } = require('child_process');
-const { existsSync, readFileSync } = require('fs');
+const { existsSync, readFileSync, writeFileSync } = require('fs');
 const path = require('path');
 const os = require('os');
 
@@ -122,6 +122,44 @@ try {
   );
 
   console.log('\x1b[32m%s\x1b[0m', 'Sync complete!');
+
+  // Update installed_plugins.json to point to new version
+  const installedPluginsPath = path.join(os.homedir(), '.claude', 'plugins', 'installed_plugins.json');
+  try {
+    if (existsSync(installedPluginsPath)) {
+      const installedPlugins = JSON.parse(readFileSync(installedPluginsPath, 'utf-8'));
+      const pluginKey = 'claude-mem@chengjon';
+
+      // Get current git commit SHA
+      let gitCommitSha = '';
+      try {
+        gitCommitSha = execSync('git rev-parse HEAD', {
+          cwd: __dirname,
+          encoding: 'utf-8',
+          stdio: ['pipe', 'pipe', 'pipe']
+        }).trim();
+      } catch {
+        gitCommitSha = 'unknown';
+      }
+
+      // Update plugin entry
+      installedPlugins.plugins[pluginKey] = [{
+        scope: 'user',
+        installPath: CACHE_VERSION_PATH,
+        version: version,
+        installedAt: new Date().toISOString(),
+        lastUpdated: new Date().toISOString(),
+        gitCommitSha: gitCommitSha,
+        isLocal: false
+      }];
+
+      // Write back to file
+      writeFileSync(installedPluginsPath, JSON.stringify(installedPlugins, null, 2));
+      console.log('\x1b[32m%s\x1b[0m', `✓ Updated installed_plugins.json to version ${version}`);
+    }
+  } catch (error) {
+    console.warn('\x1b[33m%s\x1b[0m', `Warning: Could not update installed_plugins.json: ${error.message}`);
+  }
 
   // Trigger worker restart after file sync
   console.log('\n🔄 Triggering worker restart...');
