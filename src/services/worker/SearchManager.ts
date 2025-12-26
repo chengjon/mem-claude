@@ -21,6 +21,166 @@ const RECENCY_WINDOW_DAYS = 90;
 const RECENCY_WINDOW_MS = RECENCY_WINDOW_DAYS * 24 * 60 * 60 * 1000;
 
 /**
+ * Enhanced LRU cache for ChromaDB query results with monitoring and smart invalidation
+ */
+class ChromaCache {
+  private cache = new Map<string, { data: any; expires: number }>();
+  private maxEntries: number;
+  private ttl: number;
+
+  // Performance monitoring
+  private hits = 0;
+  private misses = 0;
+  private evictions = 0;
+
+  constructor(maxEntries: number = 500, ttl: number = 5 * 60 * 1000) {
+    this.maxEntries = maxEntries;
+    this.ttl = ttl;
+  }
+
+  private makeKey(query: string, limit: number, whereFilter?: Record<string, any>): string {
+    return `${query}|${limit}|${JSON.stringify(whereFilter || {})}`;
+  }
+
+  get(query: string, limit: number, whereFilter?: Record<string, any>): any | null {
+    const key = this.makeKey(query, limit, whereFilter);
+    const entry = this.cache.get(key);
+
+    if (!entry) {
+      this.misses++;
+      return null;
+    }
+
+    if (Date.now() > entry.expires) {
+      this.cache.delete(key);
+      this.misses++;
+      return null;
+    }
+
+    this.hits++;
+    logger.debug('CACHE', 'ChromaDB cache hit', { query, limit });
+    return entry.data;
+  }
+
+  set(query: string, limit: number, data: any, whereFilter?: Record<string, any>): void {
+    const key = this.makeKey(query, limit, whereFilter);
+
+    // Evict oldest if at capacity
+    if (this.cache.size >= this.maxEntries) {
+      const firstKey = this.cache.keys().next().value;
+      if (firstKey) {
+        this.cache.delete(firstKey);
+        this.evictions++;
+      }
+    }
+
+    this.cache.set(key, {
+      data,
+      expires: Date.now() + this.ttl
+    });
+  }
+
+  /**
+   * Invalidate cache entries by pattern
+   * Useful when new observations are added
+   */
+  invalidateByPattern(pattern: string): number {
+    let count = 0;
+    for (const key of this.cache.keys()) {
+      if (key.includes(pattern)) {
+        this.cache.delete(key);
+        count++;
+      }
+    }
+    if (count > 0) {
+      logger.info('CACHE', `Invalidated ${count} cache entries matching pattern: ${pattern}`);
+    }
+    return count;
+  }
+
+  /**
+   * Invalidate all cache entries
+   */
+  clear(): void {
+    const size = this.cache.size;
+    this.cache.clear();
+    this.hits = 0;
+    this.misses = 0;
+    this.evictions = 0;
+    logger.info('CACHE', `Cleared ${size} cache entries`);
+  }
+
+  get size(): number {
+    return this.cache.size;
+  }
+
+  /**
+   * Get cache statistics
+   */
+  getStats() {
+    const total = this.hits + this.misses;
+    return {
+      size: this.cache.size,
+      hits: this.hits,
+      misses: this.misses,
+      evictions: this.evictions,
+      hitRate: total > 0 ? (this.hits / total * 100).toFixed(2) + '%' : '0%',
+      totalRequests: total
+    };
+  }
+}
+
+/**
+ * Enhanced semaphore with monitoring
+ */
+class ChromaSemaphore {
+  private queue: Array<() => void> = [];
+  private running = 0;
+
+  // Performance monitoring
+  private totalRequests = 0;
+  private maxQueueDepth = 0;
+
+  constructor(private maxConcurrent: number = 5) {}
+
+  async acquire<T>(fn: () => Promise<T>): Promise<T> {
+    this.totalRequests++;
+
+    // Track queue depth
+    if (this.queue.length > this.maxQueueDepth) {
+      this.maxQueueDepth = this.queue.length;
+    }
+
+    while (this.running >= this.maxConcurrent) {
+      await new Promise(resolve => this.queue.push(resolve));
+    }
+
+    this.running++;
+    try {
+      return await fn();
+    } finally {
+      this.running--;
+      const next = this.queue.shift();
+      if (next) next();
+    }
+  }
+
+  /**
+   * Get semaphore statistics
+   */
+  getStats() {
+    return {
+      running: this.running,
+      queued: this.queue.length,
+      maxConcurrent: this.maxConcurrent,
+      totalRequests: this.totalRequests,
+      maxQueueDepth: this.maxQueueDepth,
+      utilization: (this.running / this.maxConcurrent * 100).toFixed(2) + '%'
+    };
+  }
+}
+
+/**
  * Format search error with context about what operation failed
  */
 function formatSearchError(operation: string, query: string, error: any): string {
@@ -56,23 +216,111 @@ function formatChromaError(operation: string, error: any): string {
 }
 
 export class SearchManager {
+  private chromaCache: ChromaCache;
+  private chromaSemaphore: ChromaSemaphore;
+
   constructor(
     private sessionSearch: SessionSearch,
     private sessionStore: SessionStore,
     private chromaSync: ChromaSync,
     private formatter: FormattingService,
     private timelineService: TimelineService
-  ) {}
+  ) {
+    // Initialize cache with 500 entries, 5 minute TTL
+    this.chromaCache = new ChromaCache(500, 5 * 60 * 1000);
+    // Limit concurrent ChromaDB queries to 5
+    this.chromaSemaphore = new ChromaSemaphore(5);
+
+    logger.info('SEARCH', 'ChromaDB optimizations initialized', {
+      cacheEnabled: true,
+      maxConcurrentQueries: 5,
+      cacheTTL: '5 minutes'
+    });
+  }
 
   /**
    * Query Chroma vector database via ChromaSync
+   * Uses cache and semaphore for optimization
    */
   private async queryChroma(
     query: string,
     limit: number,
     whereFilter?: Record<string, any>
   ): Promise<{ ids: number[]; distances: number[]; metadatas: any[] }> {
-    return await this.chromaSync.queryChroma(query, limit, whereFilter);
+    // Check cache first
+    const cached = this.chromaCache.get(query, limit, whereFilter);
+    if (cached) {
+      return cached;
+    }
+
+    // Use semaphore to limit concurrent queries
+    const result = await this.chromaSemaphore.acquire(async () => {
+      return await this.chromaSync.queryChroma(query, limit, whereFilter);
+    });
+
+    // Cache the result
+    this.chromaCache.set(query, limit, result, whereFilter);
+
+    return result;
+  }
+
+  /**
+   * Get cache and performance statistics
+   */
+  getPerformanceStats() {
+    return {
+      cache: this.chromaCache.getStats(),
+      semaphore: this.chromaSemaphore.getStats(),
+      timestamp: new Date().toISOString()
+    };
+  }
+
+  /**
+   * Invalidate cache entries by pattern
+   * Call this when new observations are added
+   */
+  invalidateCache(pattern?: string): number {
+    if (pattern) {
+      return this.chromaCache.invalidateByPattern(pattern);
+    } else {
+      this.chromaCache.clear();
+      return 0;
+    }
+  }
+
+  /**
+   * Warm up cache with common queries
+   * Call this during worker startup
+   */
+  async warmupCache(): Promise<void> {
+    logger.info('SEARCH', 'Starting cache warmup...');
+
+    const commonQueries = [
+      'test',
+      'database',
+      'api',
+      'authentication',
+      'error',
+      'bug',
+      'feature',
+      'fix'
+    ];
+
+    let warmed = 0;
+    for (const query of commonQueries) {
+      try {
+        // Preload common queries in background
+        this.queryChroma(query, 20).then(() => {
+          logger.debug('CACHE', `Warmed up cache for query: ${query}`);
+        });
+        warmed++;
+      } catch (error) {
+        // Ignore errors during warmup
+        logger.debug('CACHE', `Failed to warm up query: ${query}`, { error });
+      }
+    }
+
+    logger.info('SEARCH', `Cache warmup initiated for ${warmed} common queries`);
   }
 
   /**
@@ -702,12 +950,15 @@ export class SearchManager {
                 const ids = metadataResults.map(obs => obs.id);
                 const chromaResults = await this.queryChroma('decision', Math.min(ids.length, 100));
 
-                const rankedIds: number[] = [];
+                // Use Set for O(1) lookups instead of Array.includes()
+                const idsSet = new Set(ids);
+                const rankedSet = new Set<number>();
                 for (const chromaId of chromaResults.ids) {
-                  if (ids.includes(chromaId) && !rankedIds.includes(chromaId)) {
-                    rankedIds.push(chromaId);
+                  if (idsSet.has(chromaId)) {
+                    rankedSet.add(chromaId);
                   }
                 }
+                const rankedIds = Array.from(rankedSet);
 
                 if (rankedIds.length > 0) {
                   results = this.sessionStore.getObservationsByIds(rankedIds, { limit: filters.limit || 20 });
@@ -781,12 +1032,15 @@ export class SearchManager {
               const idsArray = Array.from(allIds);
               const chromaResults = await this.queryChroma('what changed', Math.min(idsArray.length, 100));
 
-              const rankedIds: number[] = [];
+              // Use Set for O(1) lookups instead of Array.includes()
+              const idsSet = allIds; // Already a Set
+              const rankedSet = new Set<number>();
               for (const chromaId of chromaResults.ids) {
-                if (idsArray.includes(chromaId) && !rankedIds.includes(chromaId)) {
-                  rankedIds.push(chromaId);
+                if (idsSet.has(chromaId)) {
+                  rankedSet.add(chromaId);
                 }
               }
+              const rankedIds = Array.from(rankedSet);
 
               if (rankedIds.length > 0) {
                 results = this.sessionStore.getObservationsByIds(rankedIds, { limit: filters.limit || 20 });
@@ -865,12 +1119,15 @@ export class SearchManager {
               const ids = metadataResults.map(obs => obs.id);
               const chromaResults = await this.queryChroma('how it works architecture', Math.min(ids.length, 100));
 
-              const rankedIds: number[] = [];
+              // Use Set for O(1) lookups instead of Array.includes()
+              const idsSet = new Set(ids);
+              const rankedSet = new Set<number>();
               for (const chromaId of chromaResults.ids) {
-                if (ids.includes(chromaId) && !rankedIds.includes(chromaId)) {
-                  rankedIds.push(chromaId);
+                if (idsSet.has(chromaId)) {
+                  rankedSet.add(chromaId);
                 }
               }
+              const rankedIds = Array.from(rankedSet);
 
               if (rankedIds.length > 0) {
                 results = this.sessionStore.getObservationsByIds(rankedIds, { limit: filters.limit || 20 });
@@ -1150,12 +1407,15 @@ export class SearchManager {
               const chromaResults = await this.queryChroma(concept, Math.min(ids.length, 100));
 
               // Intersect: Keep only IDs that passed metadata filter, in semantic rank order
-              const rankedIds: number[] = [];
+              // Use Set for O(1) lookups instead of Array.includes()
+              const idsSet = new Set(ids);
+              const rankedSet = new Set<number>();
               for (const chromaId of chromaResults.ids) {
-                if (ids.includes(chromaId) && !rankedIds.includes(chromaId)) {
-                  rankedIds.push(chromaId);
+                if (idsSet.has(chromaId)) {
+                  rankedSet.add(chromaId);
                 }
               }
+              const rankedIds = Array.from(rankedSet);
 
               logger.debug('SEARCH', 'Chroma ranked results by semantic relevance', { count: rankedIds.length });
 
@@ -1237,12 +1497,15 @@ export class SearchManager {
               const chromaResults = await this.queryChroma(filePath, Math.min(ids.length, 100));
 
               // Intersect: Keep only IDs that passed metadata filter, in semantic rank order
-              const rankedIds: number[] = [];
+              // Use Set for O(1) lookups instead of Array.includes()
+              const idsSet = new Set(ids);
+              const rankedSet = new Set<number>();
               for (const chromaId of chromaResults.ids) {
-                if (ids.includes(chromaId) && !rankedIds.includes(chromaId)) {
-                  rankedIds.push(chromaId);
+                if (idsSet.has(chromaId)) {
+                  rankedSet.add(chromaId);
                 }
               }
+              const rankedIds = Array.from(rankedSet);
 
               logger.debug('SEARCH', 'Chroma ranked observations by semantic relevance', { count: rankedIds.length });
 
@@ -1334,12 +1597,15 @@ export class SearchManager {
               const chromaResults = await this.queryChroma(typeStr, Math.min(ids.length, 100));
 
               // Intersect: Keep only IDs that passed metadata filter, in semantic rank order
-              const rankedIds: number[] = [];
+              // Use Set for O(1) lookups instead of Array.includes()
+              const idsSet = new Set(ids);
+              const rankedSet = new Set<number>();
               for (const chromaId of chromaResults.ids) {
-                if (ids.includes(chromaId) && !rankedIds.includes(chromaId)) {
-                  rankedIds.push(chromaId);
+                if (idsSet.has(chromaId)) {
+                  rankedSet.add(chromaId);
                 }
               }
+              const rankedIds = Array.from(rankedSet);
 
               logger.debug('SEARCH', 'Chroma ranked results by semantic relevance', { count: rankedIds.length });
 

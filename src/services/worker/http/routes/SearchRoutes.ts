@@ -41,6 +41,11 @@ export class SearchRoutes extends BaseRouteHandler {
     // Timeline and help endpoints
     app.get('/api/timeline/by-query', this.handleGetTimelineByQuery.bind(this));
     app.get('/api/search/help', this.handleSearchHelp.bind(this));
+
+    // Performance monitoring endpoints (Phase 2)
+    app.get('/api/performance/stats', this.handleGetPerformanceStats.bind(this));
+    app.post('/api/performance/cache/invalidate', this.handleInvalidateCache.bind(this));
+    app.post('/api/performance/cache/warmup', this.handleWarmupCache.bind(this));
   }
 
   /**
@@ -235,6 +240,43 @@ export class SearchRoutes extends BaseRouteHandler {
   private handleGetTimelineByQuery = this.wrapHandler(async (req: Request, res: Response): Promise<void> => {
     const result = await this.searchManager.getTimelineByQuery(req.query);
     res.json(result);
+  });
+
+  /**
+   * Get performance statistics
+   * GET /api/performance/stats
+   */
+  private handleGetPerformanceStats = this.wrapHandler(async (req: Request, res: Response): Promise<void> => {
+    const stats = this.searchManager.getPerformanceStats();
+    res.json(stats);
+  });
+
+  /**
+   * Invalidate cache entries
+   * POST /api/performance/cache/invalidate
+   * Body: { "pattern": "optional-query-pattern" }
+   */
+  private handleInvalidateCache = this.wrapHandler(async (req: Request, res: Response): Promise<void> => {
+    const { pattern } = req.body || {};
+    const count = this.searchManager.invalidateCache(pattern);
+    res.json({
+      success: true,
+      message: pattern ? `Invalidated ${count} cache entries matching: ${pattern}` : 'Cleared all cache',
+      pattern: pattern || 'all',
+      count
+    });
+  });
+
+  /**
+   * Warm up cache with common queries
+   * POST /api/performance/cache/warmup
+   */
+  private handleWarmupCache = this.wrapHandler(async (req: Request, res: Response): Promise<void> => {
+    await this.searchManager.warmupCache();
+    res.json({
+      success: true,
+      message: 'Cache warmup initiated'
+    });
   });
 
   /**

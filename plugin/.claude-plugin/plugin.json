@@ -1,11 +1,11 @@
 {
   "name": "claude-mem",
-  "version": "7.4.5",
+  "version": "7.4.6",
   "description": "Persistent memory system for Claude Code - seamlessly preserve context across sessions",
   "author": {
-    "name": "Alex Newman"
+    "name": "chengjon"
   },
-  "repository": "https://github.com/chengjon/mem-claude",
+  "repository": "https://github.com/chengjon/mem-claude.git",
   "license": "AGPL-3.0",
   "keywords": [
     "memory",
