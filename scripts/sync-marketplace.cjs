@@ -39,8 +39,8 @@ function getBuildConfig() {
     console.warn('Could not read plugin.json, using defaults');
   }
   
-  const installedPath = path.join(pluginDir, pluginAuthor, 'claude-mem');
-  const cacheBasePath = path.join(cacheDir, pluginAuthor, 'claude-mem');
+  const installedPath = path.join(pluginDir, pluginAuthor, 'mem-claude');
+  const cacheBasePath = path.join(cacheDir, pluginAuthor, 'mem-claude');
   
   return {
     version: pluginVersion,
