@@ -1,5 +1,5 @@
 /**
- * Structured Logger for claude-mem Worker Service
+ * Structured Logger for mem-claude Worker Service
  * Provides readable, traceable logging with correlation IDs and data flow tracking
  */
 

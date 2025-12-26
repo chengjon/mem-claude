@@ -38,7 +38,7 @@ describe('Session Initialization (UserPromptSubmit)', () => {
           tool_name: bashCommandScenario.tool_name,
           tool_input: bashCommandScenario.tool_input,
           tool_response: bashCommandScenario.tool_response,
-          cwd: '/project/claude-mem'
+          cwd: '/project/mem-claude'
         })
       }
     );

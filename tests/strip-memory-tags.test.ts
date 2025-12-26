@@ -11,9 +11,9 @@ import { stripMemoryTagsFromJson } from '../dist/utils/tag-stripping.js';
 const stripMemoryTags = stripMemoryTagsFromJson;
 
 describe('stripMemoryTags', () => {
-  // Basic functionality tests - <claude-mem-context>
-  it('should strip <claude-mem-context> tags', () => {
-    const input = 'before <claude-mem-context>injected content</claude-mem-context> after';
+  // Basic functionality tests - <mem-claude-context>
+  it('should strip <mem-claude-context> tags', () => {
+    const input = 'before <mem-claude-context>injected content</mem-claude-context> after';
     const expected = 'before  after';
     assert.strictEqual(stripMemoryTags(input), expected);
   });
@@ -26,24 +26,24 @@ describe('stripMemoryTags', () => {
   });
 
   it('should strip both tag types in one string', () => {
-    const input = '<claude-mem-context>context</claude-mem-context> middle <private>private</private>';
+    const input = '<mem-claude-context>context</mem-claude-context> middle <private>private</private>';
     const expected = 'middle';
     assert.strictEqual(stripMemoryTags(input), expected);
   });
 
   it('should handle nested tags', () => {
-    const input = '<claude-mem-context>outer <private>inner</private> outer</claude-mem-context>';
+    const input = '<mem-claude-context>outer <private>inner</private> outer</mem-claude-context>';
     const expected = '';
     assert.strictEqual(stripMemoryTags(input), expected);
   });
 
   it('should handle multiline content in tags', () => {
     const input = `before
-<claude-mem-context>
+<mem-claude-context>
 line 1
 line 2
 line 3
-</claude-mem-context>
+</mem-claude-context>
 after`;
     const expected = 'before\n\nafter';
     assert.strictEqual(stripMemoryTags(input), expected);
@@ -56,7 +56,7 @@ after`;
   });
 
   it('should return empty string for content that is only tags', () => {
-    const input = '<claude-mem-context>only this</claude-mem-context>';
+    const input = '<mem-claude-context>only this</mem-claude-context>';
     const expected = '';
     assert.strictEqual(stripMemoryTags(input), expected);
   });
@@ -74,14 +74,14 @@ after`;
   });
 
   it('should trim whitespace after stripping', () => {
-    const input = '   <claude-mem-context>content</claude-mem-context>   ';
+    const input = '   <mem-claude-context>content</mem-claude-context>   ';
     const expected = '';
     assert.strictEqual(stripMemoryTags(input), expected);
   });
 
   it('should handle malformed tags (unclosed)', () => {
-    const input = '<claude-mem-context>unclosed tag content';
-    const expected = '<claude-mem-context>unclosed tag content';
+    const input = '<mem-claude-context>unclosed tag content';
+    const expected = '<mem-claude-context>unclosed tag content';
     assert.strictEqual(stripMemoryTags(input), expected);
   });
 
@@ -126,22 +126,22 @@ after`;
   it('should strip tags from JSON.stringify output', () => {
     const obj = {
       message: 'hello',
-      context: '<claude-mem-context>past observation</claude-mem-context>',
+      context: '<mem-claude-context>past observation</mem-claude-context>',
       private: '<private>sensitive</private>'
     };
     const jsonStr = JSON.stringify(obj);
     const result = stripMemoryTags(jsonStr);
 
     // Tags should be stripped from the JSON string
-    assert.ok(!result.includes('<claude-mem-context>'));
-    assert.ok(!result.includes('</claude-mem-context>'));
+    assert.ok(!result.includes('<mem-claude-context>'));
+    assert.ok(!result.includes('</mem-claude-context>'));
     assert.ok(!result.includes('<private>'));
     assert.ok(!result.includes('</private>'));
   });
 
   it('should handle very large content efficiently', () => {
     const largeContent = 'x'.repeat(10000);
-    const input = `<claude-mem-context>${largeContent}</claude-mem-context>`;
+    const input = `<mem-claude-context>${largeContent}</mem-claude-context>`;
     const expected = '';
     assert.strictEqual(stripMemoryTags(input), expected);
   });

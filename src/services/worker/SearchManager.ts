@@ -1,5 +1,5 @@
 /**
- * SearchManager - Core search orchestration for claude-mem
+ * SearchManager - Core search orchestration for mem-claude
  * Extracted from mcp-server.ts to centralize business logic in Worker services
  *
  * This class contains all tool handler logic that was previously in the MCP server.
@@ -16,7 +16,7 @@ import { ObservationSearchResult, SessionSummarySearchResult, UserPromptSearchRe
 import { logger } from '../../utils/logger.js';
 import { formatDate, formatTime, formatDateTime, extractFirstFile, groupByDate, estimateTokens } from '../../shared/timeline-formatting.js';
 
-const COLLECTION_NAME = 'cm__claude-mem';
+const COLLECTION_NAME = 'cm__mem-claude';
 const RECENCY_WINDOW_DAYS = 90;
 const RECENCY_WINDOW_MS = RECENCY_WINDOW_DAYS * 24 * 60 * 60 * 1000;
 

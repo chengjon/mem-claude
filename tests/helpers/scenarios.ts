@@ -1,5 +1,5 @@
 /**
- * Real-world test scenarios extracted from actual claude-mem usage.
+ * Real-world test scenarios extracted from actual mem-claude usage.
  * These represent typical tool usage patterns that generate observations.
  */
 
@@ -70,7 +70,7 @@ export const grepScenario = {
 // A real session with prompts
 export const sessionScenario = {
   claudeSessionId: 'abc-123-def-456',
-  project: 'claude-mem',
+  project: 'mem-claude',
   userPrompt: 'Help me fix the bug in the parser'
 };
 

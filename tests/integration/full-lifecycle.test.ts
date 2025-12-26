@@ -38,11 +38,11 @@ describe('Full Observation Lifecycle', () => {
     global.fetch = vi.fn().mockResolvedValueOnce({
       ok: true,
       status: 200,
-      text: async () => '# [claude-mem] recent context\n\nNo observations yet.'
+      text: async () => '# [mem-claude] recent context\n\nNo observations yet.'
     });
 
     const contextResponse = await fetch(
-      `http://127.0.0.1:${WORKER_PORT}/api/context/inject?project=claude-mem`
+      `http://127.0.0.1:${WORKER_PORT}/api/context/inject?project=mem-claude`
     );
     expect(contextResponse.ok).toBe(true);
     const contextText = await contextResponse.text();
@@ -65,7 +65,7 @@ describe('Full Observation Lifecycle', () => {
           tool_name: bashCommandScenario.tool_name,
           tool_input: bashCommandScenario.tool_input,
           tool_response: bashCommandScenario.tool_response,
-          cwd: '/project/claude-mem'
+          cwd: '/project/mem-claude'
         })
       }
     );
@@ -97,7 +97,7 @@ describe('Full Observation Lifecycle', () => {
     });
 
     const searchResponse = await fetch(
-      `http://127.0.0.1:${WORKER_PORT}/api/search?query=git+status&project=claude-mem`
+      `http://127.0.0.1:${WORKER_PORT}/api/search?query=git+status&project=mem-claude`
     );
     expect(searchResponse.ok).toBe(true);
     const searchResults = await searchResponse.json();
@@ -120,7 +120,7 @@ describe('Full Observation Lifecycle', () => {
           claudeSessionId: sessionId,
           last_user_message: 'Thanks!',
           last_assistant_message: 'Checked git status successfully.',
-          cwd: '/project/claude-mem'
+          cwd: '/project/mem-claude'
         })
       }
     );

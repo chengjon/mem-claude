@@ -1,10 +1,10 @@
 # Worker Service Diagnostics
 
-Bun worker-specific troubleshooting for claude-mem.
+Bun worker-specific troubleshooting for mem-claude.
 
 ## Worker Overview
 
-The claude-mem worker is a persistent background service managed by Bun. It:
+The mem-claude worker is a persistent background service managed by Bun. It:
 - Runs Express.js server on port 37777 (default)
 - Processes observations asynchronously
 - Serves the viewer UI
@@ -46,7 +46,7 @@ curl -s http://127.0.0.1:37777/health
 
 ```bash
 # View PID file
-cat ~/.claude-mem/worker.pid
+cat ~/.mem-claude/worker.pid
 
 # Check process details
 ps aux | grep "bun.*worker-service"
@@ -61,7 +61,7 @@ The worker exposes a health endpoint at `/health`:
 curl -s http://127.0.0.1:37777/health
 
 # With custom port
-PORT=$(grep CLAUDE_MEM_WORKER_PORT ~/.claude-mem/settings.json | grep -o '[0-9]\+' || echo "37777")
+PORT=$(grep CLAUDE_MEM_WORKER_PORT ~/.mem-claude/settings.json | grep -o '[0-9]\+' || echo "37777")
 curl -s http://127.0.0.1:$PORT/health
 ```
 
@@ -82,32 +82,32 @@ cd ~/.claude/plugins/marketplaces/chengjon/
 npm run worker:logs
 
 # View today's log file directly
-cat ~/.claude-mem/logs/worker-$(date +%Y-%m-%d).log
+cat ~/.mem-claude/logs/worker-$(date +%Y-%m-%d).log
 
 # Last 50 lines of today's log
-tail -50 ~/.claude-mem/logs/worker-$(date +%Y-%m-%d).log
+tail -50 ~/.mem-claude/logs/worker-$(date +%Y-%m-%d).log
 
 # Follow logs in real-time
-tail -f ~/.claude-mem/logs/worker-$(date +%Y-%m-%d).log
+tail -f ~/.mem-claude/logs/worker-$(date +%Y-%m-%d).log
 ```
 
 ### Search Logs for Errors
 
 ```bash
 # Find errors in today's log
-grep -i "error" ~/.claude-mem/logs/worker-$(date +%Y-%m-%d).log
+grep -i "error" ~/.mem-claude/logs/worker-$(date +%Y-%m-%d).log
 
 # Find exceptions
-grep -i "exception" ~/.claude-mem/logs/worker-$(date +%Y-%m-%d).log
+grep -i "exception" ~/.mem-claude/logs/worker-$(date +%Y-%m-%d).log
 
 # Find failed requests
-grep -i "failed" ~/.claude-mem/logs/worker-$(date +%Y-%m-%d).log
+grep -i "failed" ~/.mem-claude/logs/worker-$(date +%Y-%m-%d).log
 
 # All error patterns
-grep -iE "error|exception|failed|crash" ~/.claude-mem/logs/worker-$(date +%Y-%m-%d).log
+grep -iE "error|exception|failed|crash" ~/.mem-claude/logs/worker-$(date +%Y-%m-%d).log
 
 # Search across all log files
-grep -iE "error|exception|failed|crash" ~/.claude-mem/logs/worker-*.log
+grep -iE "error|exception|failed|crash" ~/.mem-claude/logs/worker-*.log
 ```
 
 ### Common Log Patterns
@@ -152,7 +152,7 @@ npm run worker:start
 ```bash
 # Restart worker (stops and starts)
 cd ~/.claude/plugins/marketplaces/chengjon/
-claude-mem restart
+mem-claude restart
 
 # Or manually stop and start
 npm run worker:stop
@@ -195,15 +195,15 @@ npm run worker:stop
    ```bash
    lsof -i :37777
    ```
-   If port in use, either kill that process or change claude-mem port.
+   If port in use, either kill that process or change mem-claude port.
 
 5. **Check PID file:**
    ```bash
-   cat ~/.claude-mem/worker.pid
+   cat ~/.mem-claude/worker.pid
    ```
    If worker PID exists but process is dead, remove stale PID:
    ```bash
-   rm ~/.claude-mem/worker.pid
+   rm ~/.mem-claude/worker.pid
    npm run worker:start
    ```
 
@@ -218,13 +218,13 @@ npm run worker:start
 
 **Port conflict:**
 ```bash
-echo '{"CLAUDE_MEM_WORKER_PORT":"37778"}' > ~/.claude-mem/settings.json
-claude-mem restart
+echo '{"CLAUDE_MEM_WORKER_PORT":"37778"}' > ~/.mem-claude/settings.json
+mem-claude restart
 ```
 
 **Stale PID file:**
 ```bash
-rm ~/.claude-mem/worker.pid
+rm ~/.mem-claude/worker.pid
 npm run worker:start
 ```
 
@@ -236,12 +236,12 @@ If worker keeps restarting (check logs for repeated startup messages):
 
 1. **Check error logs:**
    ```bash
-   grep -i "error" ~/.claude-mem/logs/worker-$(date +%Y-%m-%d).log | tail -100
+   grep -i "error" ~/.mem-claude/logs/worker-$(date +%Y-%m-%d).log | tail -100
    ```
 
 2. **Look for crash pattern:**
    ```bash
-   grep -A 5 "exited with code" ~/.claude-mem/logs/worker-$(date +%Y-%m-%d).log
+   grep -A 5 "exited with code" ~/.mem-claude/logs/worker-$(date +%Y-%m-%d).log
    ```
 
 3. **Run worker in foreground to see crashes:**
@@ -254,21 +254,21 @@ If worker keeps restarting (check logs for repeated startup messages):
 
 **Database corruption:**
 ```bash
-sqlite3 ~/.claude-mem/claude-mem.db "PRAGMA integrity_check;"
+sqlite3 ~/.mem-claude/mem-claude.db "PRAGMA integrity_check;"
 ```
 If fails, backup and recreate database.
 
 **Out of memory:**
 Check if database is too large or memory leak. Restart:
 ```bash
-claude-mem restart
+mem-claude restart
 ```
 
 **Port conflict race condition:**
 Another process grabbing port intermittently. Change port:
 ```bash
-echo '{"CLAUDE_MEM_WORKER_PORT":"37778"}' > ~/.claude-mem/settings.json
-claude-mem restart
+echo '{"CLAUDE_MEM_WORKER_PORT":"37778"}' > ~/.mem-claude/settings.json
+mem-claude restart
 ```
 
 ## Worker Management Commands
@@ -284,7 +284,7 @@ npm run worker:start
 npm run worker:stop
 
 # Restart worker
-claude-mem restart
+mem-claude restart
 
 # View logs
 npm run worker:logs
@@ -293,35 +293,35 @@ npm run worker:logs
 curl -s http://127.0.0.1:37777/health
 
 # View PID
-cat ~/.claude-mem/worker.pid
+cat ~/.mem-claude/worker.pid
 
 # View today's log file
-cat ~/.claude-mem/logs/worker-$(date +%Y-%m-%d).log
+cat ~/.mem-claude/logs/worker-$(date +%Y-%m-%d).log
 
 # List all log files
-ls -lh ~/.claude-mem/logs/worker-*.log
+ls -lh ~/.mem-claude/logs/worker-*.log
 ```
 
 ## Log File Management
 
-Worker logs are stored in `~/.claude-mem/logs/` with daily rotation:
+Worker logs are stored in `~/.mem-claude/logs/` with daily rotation:
 
 ```bash
 # View today's log
-cat ~/.claude-mem/logs/worker-$(date +%Y-%m-%d).log
+cat ~/.mem-claude/logs/worker-$(date +%Y-%m-%d).log
 
 # View yesterday's log
-cat ~/.claude-mem/logs/worker-$(date -d "yesterday" +%Y-%m-%d).log  # Linux
-cat ~/.claude-mem/logs/worker-$(date -v-1d +%Y-%m-%d).log          # macOS
+cat ~/.mem-claude/logs/worker-$(date -d "yesterday" +%Y-%m-%d).log  # Linux
+cat ~/.mem-claude/logs/worker-$(date -v-1d +%Y-%m-%d).log          # macOS
 
 # List all logs
-ls -lh ~/.claude-mem/logs/
+ls -lh ~/.mem-claude/logs/
 
 # Clean old logs (older than 7 days)
-find ~/.claude-mem/logs/ -name "worker-*.log" -mtime +7 -delete
+find ~/.mem-claude/logs/ -name "worker-*.log" -mtime +7 -delete
 
 # Archive logs
-tar -czf ~/claude-mem-logs-backup-$(date +%Y-%m-%d).tar.gz ~/.claude-mem/logs/
+tar -czf ~/mem-claude-logs-backup-$(date +%Y-%m-%d).tar.gz ~/.mem-claude/logs/
 ```
 
 **Note:** Logs auto-rotate daily. No manual flush required.
@@ -355,8 +355,8 @@ All should return appropriate responses (HTML for viewer, JSON for APIs).
 |---------|---------|----------------|
 | Check if running | `npm run worker:status` | Shows PID and uptime |
 | Worker not running | `npm run worker:start` | Worker starts successfully |
-| Worker crashed | `claude-mem restart` | Worker restarts |
-| View recent errors | `grep -i error ~/.claude-mem/logs/worker-$(date +%Y-%m-%d).log \| tail -20` | Shows recent errors |
+| Worker crashed | `mem-claude restart` | Worker restarts |
+| View recent errors | `grep -i error ~/.mem-claude/logs/worker-$(date +%Y-%m-%d).log \| tail -20` | Shows recent errors |
 | Port in use | `lsof -i :37777` | Shows process using port |
-| Stale PID | `rm ~/.claude-mem/worker.pid && npm run worker:start` | Removes stale PID and starts |
+| Stale PID | `rm ~/.mem-claude/worker.pid && npm run worker:start` | Removes stale PID and starts |
 | Dependencies missing | `npm install && npm run worker:start` | Installs deps and starts |

@@ -2,7 +2,7 @@
  * Settings Routes
  *
  * Handles settings management, MCP toggle, and branch switching.
- * Settings are stored in ~/.claude-mem/settings.json
+ * Settings are stored in ~/.mem-claude/settings.json
  */
 
 import express, { Request, Response } from 'express';
@@ -46,17 +46,17 @@ export class SettingsRoutes extends BaseRouteHandler {
   }
 
   /**
-   * Get environment settings (from ~/.claude-mem/settings.json)
+   * Get environment settings (from ~/.mem-claude/settings.json)
    */
   private handleGetSettings = this.wrapHandler((req: Request, res: Response): void => {
-    const settingsPath = path.join(homedir(), '.claude-mem', 'settings.json');
+    const settingsPath = path.join(homedir(), '.mem-claude', 'settings.json');
     this.ensureSettingsFile(settingsPath);
     const settings = SettingsDefaultsManager.loadFromFile(settingsPath);
     res.json(settings);
   });
 
   /**
-   * Update environment settings (in ~/.claude-mem/settings.json) with validation
+   * Update environment settings (in ~/.mem-claude/settings.json) with validation
    */
   private handleUpdateSettings = this.wrapHandler((req: Request, res: Response): void => {
     // Validate all settings
@@ -70,7 +70,7 @@ export class SettingsRoutes extends BaseRouteHandler {
     }
 
     // Read existing settings
-    const settingsPath = path.join(homedir(), '.claude-mem', 'settings.json');
+    const settingsPath = path.join(homedir(), '.mem-claude', 'settings.json');
     this.ensureSettingsFile(settingsPath);
     let settings: any = {};
 

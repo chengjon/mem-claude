@@ -46,7 +46,7 @@ describe('Search (MCP Tools)', () => {
 
     // Execute: Search for "parser"
     const response = await fetch(
-      `http://127.0.0.1:${WORKER_PORT}/api/search?query=parser&project=claude-mem`
+      `http://127.0.0.1:${WORKER_PORT}/api/search?query=parser&project=mem-claude`
     );
 
     // Verify: Found matching observations
@@ -67,7 +67,7 @@ describe('Search (MCP Tools)', () => {
 
     // Execute: Search for non-existent term
     const response = await fetch(
-      `http://127.0.0.1:${WORKER_PORT}/api/search?query=nonexistent&project=claude-mem`
+      `http://127.0.0.1:${WORKER_PORT}/api/search?query=nonexistent&project=mem-claude`
     );
 
     // Verify: Returns empty results gracefully
@@ -96,7 +96,7 @@ describe('Search (MCP Tools)', () => {
 
     // Execute: Search for bugfixes only
     const response = await fetch(
-      `http://127.0.0.1:${WORKER_PORT}/api/search/by-type?type=bugfix&project=claude-mem`
+      `http://127.0.0.1:${WORKER_PORT}/api/search/by-type?type=bugfix&project=mem-claude`
     );
 
     // Verify: Returns only bugfixes
@@ -125,7 +125,7 @@ describe('Search (MCP Tools)', () => {
 
     // Execute: Search by concept
     const response = await fetch(
-      `http://127.0.0.1:${WORKER_PORT}/api/search/by-concept?concept=how-it-works&project=claude-mem`
+      `http://127.0.0.1:${WORKER_PORT}/api/search/by-concept?concept=how-it-works&project=mem-claude`
     );
 
     // Verify: Returns observations with that concept
@@ -156,7 +156,7 @@ describe('Search (MCP Tools)', () => {
 
     // Execute: Search with pagination
     const response = await fetch(
-      `http://127.0.0.1:${WORKER_PORT}/api/search?query=observation&project=claude-mem&limit=20&offset=0`
+      `http://127.0.0.1:${WORKER_PORT}/api/search?query=observation&project=mem-claude&limit=20&offset=0`
     );
 
     // Verify: Returns paginated results
@@ -185,7 +185,7 @@ describe('Search (MCP Tools)', () => {
 
     // Execute: Search with date range
     const response = await fetch(
-      `http://127.0.0.1:${WORKER_PORT}/api/search?query=observation&project=claude-mem&dateStart=2024-01-05&dateEnd=2024-01-06`
+      `http://127.0.0.1:${WORKER_PORT}/api/search?query=observation&project=mem-claude&dateStart=2024-01-05&dateEnd=2024-01-06`
     );
 
     // Verify: Returns observations in date range
@@ -214,7 +214,7 @@ describe('Search (MCP Tools)', () => {
 
     // Execute: Search
     const response = await fetch(
-      `http://127.0.0.1:${WORKER_PORT}/api/search?query=parser&project=claude-mem`
+      `http://127.0.0.1:${WORKER_PORT}/api/search?query=parser&project=mem-claude`
     );
 
     // Verify: File references included
@@ -259,7 +259,7 @@ describe('Search (MCP Tools)', () => {
 
     // Execute: Search with relevance ordering
     const response = await fetch(
-      `http://127.0.0.1:${WORKER_PORT}/api/search?query=parser+bug&project=claude-mem&orderBy=relevance`
+      `http://127.0.0.1:${WORKER_PORT}/api/search?query=parser+bug&project=mem-claude&orderBy=relevance`
     );
 
     // Verify: Results ordered by relevance
@@ -290,7 +290,7 @@ describe('Search (MCP Tools)', () => {
 
     for (const query of queries) {
       await fetch(
-        `http://127.0.0.1:${WORKER_PORT}/api/search?query=${encodeURIComponent(query)}&project=claude-mem`
+        `http://127.0.0.1:${WORKER_PORT}/api/search?query=${encodeURIComponent(query)}&project=mem-claude`
       );
     }
 
@@ -304,7 +304,7 @@ describe('Search (MCP Tools)', () => {
       {
         id: 1,
         title: 'Claude-mem feature',
-        project: 'claude-mem',
+        project: 'mem-claude',
         created_at: '2024-01-01T10:00:00Z'
       }
     ];
@@ -317,13 +317,13 @@ describe('Search (MCP Tools)', () => {
 
     // Execute: Search specific project
     const response = await fetch(
-      `http://127.0.0.1:${WORKER_PORT}/api/search?query=feature&project=claude-mem`
+      `http://127.0.0.1:${WORKER_PORT}/api/search?query=feature&project=mem-claude`
     );
 
     // Verify: Returns only results from that project
     expect(response.ok).toBe(true);
     const data = await response.json();
     expect(data.results).toHaveLength(1);
-    expect(data.results[0].project).toBe('claude-mem');
+    expect(data.results[0].project).toBe('mem-claude');
   });
 });

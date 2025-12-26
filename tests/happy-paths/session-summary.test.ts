@@ -37,7 +37,7 @@ describe('Session Summary (Stop)', () => {
           claudeSessionId: sessionSummaryScenario.claudeSessionId,
           last_user_message: sessionSummaryScenario.last_user_message,
           last_assistant_message: sessionSummaryScenario.last_assistant_message,
-          cwd: '/project/claude-mem'
+          cwd: '/project/mem-claude'
         })
       }
     );

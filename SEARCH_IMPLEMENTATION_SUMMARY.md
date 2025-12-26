@@ -96,7 +96,7 @@
 ## 📁 文件结构
 
 ```
-/opt/iflow/claude-mem/
+/opt/iflow/mem-claude/
 ├── src/ui/viewer/
 │   ├── components/Header.tsx                    # ✅ 更新：添加搜索类型选择器
 │   ├── App.tsx                                 # ✅ 更新：集成搜索功能

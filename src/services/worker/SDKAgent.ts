@@ -459,7 +459,7 @@ export class SDKAgent {
    * Get model ID from settings or environment
    */
   private getModelId(): string {
-    const settingsPath = path.join(homedir(), '.claude-mem', 'settings.json');
+    const settingsPath = path.join(homedir(), '.mem-claude', 'settings.json');
     const settings = SettingsDefaultsManager.loadFromFile(settingsPath);
     return settings.CLAUDE_MEM_MODEL;
   }

@@ -10,7 +10,7 @@ The Claude-Mem Worker Service provides a comprehensive HTTP API for searching an
 Base URL: http://localhost:37777
 Port: 37777
 Version: 7.4.5
-Database: ~/.claude-mem/claude-mem.db
+Database: ~/.mem-claude/mem-claude.db
 ```
 
 ## Quick Start
@@ -100,7 +100,7 @@ curl "http://localhost:37777/api/context/timeline?anchor=123&depth_before=10&dep
 ### Context Preview
 ```bash
 # Generate context preview for a project
-curl "http://localhost:37777/api/context/preview?project=claude-mem"
+curl "http://localhost:37777/api/context/preview?project=mem-claude"
 ```
 
 ---
@@ -181,7 +181,7 @@ All API responses follow a consistent structure:
 | query | string | Search query | `query=authentication` |
 | limit | number | Max results (default: 20) | `limit=10` |
 | offset | number | Skip N results | `offset=20` |
-| project | string | Filter by project | `project=claude-mem` |
+| project | string | Filter by project | `project=mem-claude` |
 | anchor | string | Timeline anchor point | `anchor=123` |
 | depth_before | number | Records before anchor | `depth_before=10` |
 | depth_after | number | Records after anchor | `depth_after=10` |
@@ -301,7 +301,7 @@ curl http://localhost:37777/health
 ps aux | grep worker-service
 
 # Check logs
-tail -f ~/.claude-mem/worker.log
+tail -f ~/.mem-claude/worker.log
 ```
 
 ### Empty Results
@@ -333,18 +333,18 @@ curl "http://localhost:37777/api/timeline/by-query?query=database&mode=auto" | j
 ### Context Injection
 ```bash
 # Get formatted context for injection
-curl "http://localhost:37777/api/context/inject?project=claude-mem&colors=true"
+curl "http://localhost:37777/api/context/inject?project=mem-claude&colors=true"
 ```
 
 ---
 
 ## Files Referenced
 
-- **Worker Service**: `/opt/iflow/claude-mem/src/services/worker-service.ts`
-- **Search Routes**: `/opt/iflow/claude-mem/src/services/worker/http/routes/SearchRoutes.ts`
-- **Database**: `/root/.claude-mem/claude-mem.db`
-- **Settings**: `/root/.claude-mem/settings.json`
+- **Worker Service**: `/opt/iflow/mem-claude/src/services/worker-service.ts`
+- **Search Routes**: `/opt/iflow/mem-claude/src/services/worker/http/routes/SearchRoutes.ts`
+- **Database**: `/root/.mem-claude/mem-claude.db`
+- **Settings**: `/root/.mem-claude/settings.json`
 
 For complete implementation details, see:
-- API Test Report: `/opt/iflow/claude-mem/API_TEST_REPORT.md`
-- Source Code: `/opt/iflow/claude-mem/src/`
+- API Test Report: `/opt/iflow/mem-claude/API_TEST_REPORT.md`
+- Source Code: `/opt/iflow/mem-claude/src/`

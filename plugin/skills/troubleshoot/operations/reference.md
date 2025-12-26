@@ -1,6 +1,6 @@
 # Quick Commands Reference
 
-Essential commands for troubleshooting claude-mem.
+Essential commands for troubleshooting mem-claude.
 
 ## Worker Management
 
@@ -13,7 +13,7 @@ npm run worker:status
 npm run worker:start
 
 # Restart worker
-claude-mem restart
+mem-claude restart
 
 # Stop worker
 npm run worker:stop
@@ -22,13 +22,13 @@ npm run worker:stop
 npm run worker:logs
 
 # View today's log file
-cat ~/.claude-mem/logs/worker-$(date +%Y-%m-%d).log
+cat ~/.mem-claude/logs/worker-$(date +%Y-%m-%d).log
 
 # Last 50 lines
-tail -50 ~/.claude-mem/logs/worker-$(date +%Y-%m-%d).log
+tail -50 ~/.mem-claude/logs/worker-$(date +%Y-%m-%d).log
 
 # Follow logs in real-time
-tail -f ~/.claude-mem/logs/worker-$(date +%Y-%m-%d).log
+tail -f ~/.mem-claude/logs/worker-$(date +%Y-%m-%d).log
 ```
 
 ## Health Checks
@@ -52,39 +52,39 @@ curl -s http://127.0.0.1:$PORT/health
 
 ```bash
 # Observation count
-sqlite3 ~/.claude-mem/claude-mem.db "SELECT COUNT(*) FROM observations;"
+sqlite3 ~/.mem-claude/mem-claude.db "SELECT COUNT(*) FROM observations;"
 
 # Session count
-sqlite3 ~/.claude-mem/claude-mem.db "SELECT COUNT(*) FROM sessions;"
+sqlite3 ~/.mem-claude/mem-claude.db "SELECT COUNT(*) FROM sessions;"
 
 # Recent observations
-sqlite3 ~/.claude-mem/claude-mem.db "SELECT created_at, type, title FROM observations ORDER BY created_at DESC LIMIT 10;"
+sqlite3 ~/.mem-claude/mem-claude.db "SELECT created_at, type, title FROM observations ORDER BY created_at DESC LIMIT 10;"
 
 # Recent sessions
-sqlite3 ~/.claude-mem/claude-mem.db "SELECT created_at, request FROM sessions ORDER BY created_at DESC LIMIT 5;"
+sqlite3 ~/.mem-claude/mem-claude.db "SELECT created_at, request FROM sessions ORDER BY created_at DESC LIMIT 5;"
 
 # Database size
-du -h ~/.claude-mem/claude-mem.db
+du -h ~/.mem-claude/mem-claude.db
 
 # Database integrity check
-sqlite3 ~/.claude-mem/claude-mem.db "PRAGMA integrity_check;"
+sqlite3 ~/.mem-claude/mem-claude.db "PRAGMA integrity_check;"
 
 # Projects in database
-sqlite3 ~/.claude-mem/claude-mem.db "SELECT DISTINCT project FROM observations ORDER BY project;"
+sqlite3 ~/.mem-claude/mem-claude.db "SELECT DISTINCT project FROM observations ORDER BY project;"
 ```
 
 ## Configuration
 
 ```bash
 # View current settings
-cat ~/.claude-mem/settings.json
+cat ~/.mem-claude/settings.json
 cat ~/.claude/settings.json
 
 # Change worker port
-echo '{"CLAUDE_MEM_WORKER_PORT":"37778"}' > ~/.claude-mem/settings.json
+echo '{"CLAUDE_MEM_WORKER_PORT":"37778"}' > ~/.mem-claude/settings.json
 
 # Change context observation count
-# Edit ~/.claude-mem/settings.json and add:
+# Edit ~/.mem-claude/settings.json and add:
 {
   "CLAUDE_MEM_CONTEXT_OBSERVATIONS": "25"
 }
@@ -127,19 +127,19 @@ curl -v http://127.0.0.1:37777/health
 
 ```bash
 # Search logs for errors
-grep -i "error" ~/.claude-mem/logs/worker-$(date +%Y-%m-%d).log
+grep -i "error" ~/.mem-claude/logs/worker-$(date +%Y-%m-%d).log
 
 # Search for specific keyword
-grep "keyword" ~/.claude-mem/logs/worker-$(date +%Y-%m-%d).log
+grep "keyword" ~/.mem-claude/logs/worker-$(date +%Y-%m-%d).log
 
 # Search across all log files
-grep -i "error" ~/.claude-mem/logs/worker-*.log
+grep -i "error" ~/.mem-claude/logs/worker-*.log
 
 # Last 100 error lines
-grep -i "error" ~/.claude-mem/logs/worker-$(date +%Y-%m-%d).log | tail -100
+grep -i "error" ~/.mem-claude/logs/worker-$(date +%Y-%m-%d).log | tail -100
 
 # Follow logs in real-time
-tail -f ~/.claude-mem/logs/worker-$(date +%Y-%m-%d).log
+tail -f ~/.mem-claude/logs/worker-$(date +%Y-%m-%d).log
 ```
 
 ## File Locations
@@ -149,20 +149,20 @@ tail -f ~/.claude-mem/logs/worker-$(date +%Y-%m-%d).log
 ~/.claude/plugins/marketplaces/chengjon/
 
 # Database
-~/.claude-mem/claude-mem.db
+~/.mem-claude/mem-claude.db
 
 # Settings
-~/.claude-mem/settings.json
+~/.mem-claude/settings.json
 ~/.claude/settings.json
 
 # Chroma vector database
-~/.claude-mem/chroma/
+~/.mem-claude/chroma/
 
 # Worker logs (daily rotation)
-~/.claude-mem/logs/worker-*.log
+~/.mem-claude/logs/worker-*.log
 
 # Worker PID file
-~/.claude-mem/worker.pid
+~/.mem-claude/worker.pid
 ```
 
 ## System Information
@@ -184,7 +184,7 @@ bun --version
 sqlite3 --version
 
 # Check disk space
-df -h ~/.claude-mem/
+df -h ~/.mem-claude/
 ```
 
 ## One-Line Diagnostics
@@ -197,10 +197,10 @@ npm run worker:status && curl -s http://127.0.0.1:37777/health
 curl -s http://127.0.0.1:37777/health && echo " - Worker is healthy"
 
 # Database stats
-echo "Observations: $(sqlite3 ~/.claude-mem/claude-mem.db 'SELECT COUNT(*) FROM observations;')" && echo "Sessions: $(sqlite3 ~/.claude-mem/claude-mem.db 'SELECT COUNT(*) FROM sessions;')"
+echo "Observations: $(sqlite3 ~/.mem-claude/mem-claude.db 'SELECT COUNT(*) FROM observations;')" && echo "Sessions: $(sqlite3 ~/.mem-claude/mem-claude.db 'SELECT COUNT(*) FROM sessions;')"
 
 # Recent errors
-grep -i "error" ~/.claude-mem/logs/worker-$(date +%Y-%m-%d).log | tail -10
+grep -i "error" ~/.mem-claude/logs/worker-$(date +%Y-%m-%d).log | tail -10
 
 # Port check
 lsof -i :37777 || echo "Port 37777 is free"

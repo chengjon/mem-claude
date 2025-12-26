@@ -10,7 +10,7 @@ import { join } from 'path';
 import { existsSync, unlinkSync } from 'fs';
 import { rimraf } from 'rimraf';
 
-const DATA_DIR = process.env.CLAUDE_MEM_DATA_DIR || '/tmp/claude-mem-test';
+const DATA_DIR = process.env.CLAUDE_MEM_DATA_DIR || '/tmp/mem-claude-test';
 const PID_FILE = join(DATA_DIR, 'worker.pid');
 
 describe('ProcessManager', () => {

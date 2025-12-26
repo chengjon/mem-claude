@@ -1,6 +1,6 @@
 # Automated Fix Sequences
 
-One-command fix sequences for common claude-mem issues.
+One-command fix sequences for common mem-claude issues.
 
 ## Quick Fix: Complete Reset and Restart
 
@@ -44,7 +44,7 @@ npm run worker:status
 ```bash
 cd ~/.claude/plugins/marketplaces/chengjon/ && \
 npm install && \
-claude-mem restart
+mem-claude restart
 ```
 
 ## Fix: Stale PID File
@@ -52,7 +52,7 @@ claude-mem restart
 **Use when:** Worker reports running but health check fails
 
 ```bash
-rm -f ~/.claude-mem/worker.pid && \
+rm -f ~/.mem-claude/worker.pid && \
 cd ~/.claude/plugins/marketplaces/chengjon/ && \
 npm run worker:start && \
 sleep 2 && \
@@ -67,10 +67,10 @@ curl -s http://127.0.0.1:37777/health
 
 ```bash
 # Change to port 37778
-mkdir -p ~/.claude-mem && \
-echo '{"CLAUDE_MEM_WORKER_PORT":"37778"}' > ~/.claude-mem/settings.json && \
+mkdir -p ~/.mem-claude && \
+echo '{"CLAUDE_MEM_WORKER_PORT":"37778"}' > ~/.mem-claude/settings.json && \
 cd ~/.claude/plugins/marketplaces/chengjon/ && \
-claude-mem restart && \
+mem-claude restart && \
 sleep 2 && \
 curl -s http://127.0.0.1:37778/health
 ```
@@ -83,18 +83,18 @@ curl -s http://127.0.0.1:37778/health
 
 ```bash
 # Backup and test integrity
-cp ~/.claude-mem/claude-mem.db ~/.claude-mem/claude-mem.db.backup && \
-sqlite3 ~/.claude-mem/claude-mem.db "PRAGMA integrity_check;" && \
+cp ~/.mem-claude/mem-claude.db ~/.mem-claude/mem-claude.db.backup && \
+sqlite3 ~/.mem-claude/mem-claude.db "PRAGMA integrity_check;" && \
 cd ~/.claude/plugins/marketplaces/chengjon/ && \
-claude-mem restart
+mem-claude restart
 ```
 
 **If integrity check fails, recreate database:**
 ```bash
 # WARNING: This deletes all memory data
-mv ~/.claude-mem/claude-mem.db ~/.claude-mem/claude-mem.db.old && \
+mv ~/.mem-claude/mem-claude.db ~/.mem-claude/mem-claude.db.old && \
 cd ~/.claude/plugins/marketplaces/chengjon/ && \
-claude-mem restart
+mem-claude restart
 ```
 
 ## Fix: Clean Reinstall
@@ -103,14 +103,14 @@ claude-mem restart
 
 ```bash
 # Backup data first
-cp ~/.claude-mem/claude-mem.db ~/.claude-mem/claude-mem.db.backup 2>/dev/null
+cp ~/.mem-claude/mem-claude.db ~/.mem-claude/mem-claude.db.backup 2>/dev/null
 
 # Stop worker
 cd ~/.claude/plugins/marketplaces/chengjon/
 npm run worker:stop
 
 # Clean PID file
-rm -f ~/.claude-mem/worker.pid
+rm -f ~/.mem-claude/worker.pid
 
 # Reinstall dependencies
 rm -rf node_modules && \
@@ -128,14 +128,14 @@ curl -s http://127.0.0.1:37777/health
 
 ```bash
 # Archive old logs
-tar -czf ~/.claude-mem/logs-archive-$(date +%Y-%m-%d).tar.gz ~/.claude-mem/logs/*.log 2>/dev/null
+tar -czf ~/.mem-claude/logs-archive-$(date +%Y-%m-%d).tar.gz ~/.mem-claude/logs/*.log 2>/dev/null
 
 # Remove logs older than 7 days
-find ~/.claude-mem/logs/ -name "worker-*.log" -mtime +7 -delete
+find ~/.mem-claude/logs/ -name "worker-*.log" -mtime +7 -delete
 
 # Restart worker for fresh log
 cd ~/.claude/plugins/marketplaces/chengjon/
-claude-mem restart
+mem-claude restart
 ```
 
 **Note:** Logs auto-rotate daily, manual cleanup rarely needed.
@@ -153,13 +153,13 @@ npm run worker:status
 curl -s http://127.0.0.1:37777/health
 
 # Check database
-sqlite3 ~/.claude-mem/claude-mem.db "SELECT COUNT(*) FROM observations;"
+sqlite3 ~/.mem-claude/mem-claude.db "SELECT COUNT(*) FROM observations;"
 
 # Check viewer
 curl -s http://127.0.0.1:37777/api/stats
 
 # Check logs for errors
-grep -i "error" ~/.claude-mem/logs/worker-$(date +%Y-%m-%d).log | tail -20
+grep -i "error" ~/.mem-claude/logs/worker-$(date +%Y-%m-%d).log | tail -20
 ```
 
 **All checks should pass:**
@@ -182,7 +182,7 @@ cd ~/.claude/plugins/marketplaces/chengjon/ && npm run worker:status && curl -s 
 1. Run the diagnostic script from [diagnostics.md](diagnostics.md)
 2. Check specific error in worker logs:
    ```bash
-   tail -50 ~/.claude-mem/logs/worker-$(date +%Y-%m-%d).log
+   tail -50 ~/.mem-claude/logs/worker-$(date +%Y-%m-%d).log
    ```
 3. Try manual worker start to see detailed error:
    ```bash
@@ -203,4 +203,4 @@ cd ~/.claude/plugins/marketplaces/chengjon/ && npm run worker:status && curl -s 
 | `ENOENT` | Missing files | Run `npm install` |
 | `Module not found` | Dependency issue | Clean reinstall |
 | Connection refused | Worker not running | `npm run worker:start` |
-| Stale PID | Old PID file | Remove `~/.claude-mem/worker.pid` |
+| Stale PID | Old PID file | Remove `~/.mem-claude/worker.pid` |

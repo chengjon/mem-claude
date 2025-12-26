@@ -43,7 +43,7 @@ async function userMessageHook(): Promise<void> {
         method: 'GET', 
         signal: AbortSignal.timeout(5000),
         headers: {
-          'User-Agent': 'claude-mem-user-message-hook',
+          'User-Agent': 'mem-claude-user-message-hook',
           'X-Project': project
         }
       }

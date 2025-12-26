@@ -2,7 +2,7 @@
  * Happy Path Test: Observation Capture (PostToolUse)
  *
  * Tests that tool usage is captured and queued for SDK processing.
- * This is the core functionality of claude-mem - turning tool usage
+ * This is the core functionality of mem-claude - turning tool usage
  * into compressed observations.
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
@@ -42,7 +42,7 @@ describe('Observation Capture (PostToolUse)', () => {
           tool_name: bashCommandScenario.tool_name,
           tool_input: bashCommandScenario.tool_input,
           tool_response: bashCommandScenario.tool_response,
-          cwd: '/project/claude-mem'
+          cwd: '/project/mem-claude'
         })
       }
     );

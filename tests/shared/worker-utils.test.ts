@@ -67,7 +67,7 @@ describe('worker-utils', () => {
 
     it('respects CLAUDE_MEM_WORKER_PORT setting', () => {
       // Use actual data directory if it exists
-      const actualDataDir = process.env.CLAUDE_MEM_DATA_DIR || process.env.HOME + '/.claude-mem';
+      const actualDataDir = process.env.CLAUDE_MEM_DATA_DIR || process.env.HOME + '/.mem-claude';
       process.env.CLAUDE_MEM_DATA_DIR = actualDataDir;
 
       const fs = require('fs');
@@ -120,7 +120,7 @@ describe('worker-utils', () => {
     });
 
     it('respects CLAUDE_MEM_WORKER_HOST setting', () => {
-      const actualDataDir = process.env.CLAUDE_MEM_DATA_DIR || process.env.HOME + '/.claude-mem';
+      const actualDataDir = process.env.CLAUDE_MEM_DATA_DIR || process.env.HOME + '/.mem-claude';
       process.env.CLAUDE_MEM_DATA_DIR = actualDataDir;
 
       const fs = require('fs');

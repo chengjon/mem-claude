@@ -1,6 +1,6 @@
 {
   "name": "claude-mem",
-  "version": "7.4.6",
+  "version": "1.0.0",
   "description": "Memory compression system for Claude Code - persist context across sessions",
   "keywords": [
     "claude",
@@ -44,7 +44,7 @@
     "worker:stop": "bun plugin/scripts/worker-cli.js stop",
     "worker:restart": "bun plugin/scripts/worker-cli.js restart",
     "worker:status": "bun plugin/scripts/worker-cli.js status",
-    "worker:logs": "tail -n 50 ~/.claude-mem/logs/worker-$(date +%Y-%m-%d).log",
+    "worker:logs": "tail -n 50 ~/.mem-claude/logs/worker-$(date +%Y-%m-%d).log",
     "changelog:generate": "node scripts/generate-changelog.js",
     "discord:notify": "node scripts/discord-release-notify.js",
     "usage:analyze": "node scripts/analyze-usage.js",

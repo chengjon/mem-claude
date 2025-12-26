@@ -1,11 +1,11 @@
 ---
 name: troubleshoot
-description: Diagnose and fix claude-mem installation issues. Checks worker status, database integrity, service health, dependencies, and provides automated fixes for common problems.
+description: Diagnose and fix mem-claude installation issues. Checks worker status, database integrity, service health, dependencies, and provides automated fixes for common problems.
 ---
 
 # Claude-Mem Troubleshooting Skill
 
-Diagnose and resolve installation and operational issues with the claude-mem plugin.
+Diagnose and resolve installation and operational issues with the mem-claude plugin.
 
 ## When to Use This Skill
 
@@ -77,9 +77,9 @@ When troubleshooting:
 ## Technical Notes
 
 - **Worker port:** Default 37777 (configurable via `CLAUDE_MEM_WORKER_PORT`)
-- **Database location:** `~/.claude-mem/claude-mem.db`
+- **Database location:** `~/.mem-claude/mem-claude.db`
 - **Plugin location:** `~/.claude/plugins/marketplaces/chengjon/`
-- **Worker PID file:** `~/.claude-mem/worker.pid`
+- **Worker PID file:** `~/.mem-claude/worker.pid`
 
 ## Error Reporting
 

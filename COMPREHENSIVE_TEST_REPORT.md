@@ -217,7 +217,7 @@ GET /api/projects                  → 200 OK
 
 ### Current Statistics
 ```
-Database Path: /root/.claude-mem/claude-mem.db
+Database Path: /root/.mem-claude/mem-claude.db
 Database Size: 968 KB (991,232 bytes)
 
 Records:

@@ -104,7 +104,7 @@ async function summaryHook(input?: StopInput): Promise<void> {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
-        'User-Agent': 'claude-mem-summary-hook',
+        'User-Agent': 'mem-claude-summary-hook',
         'X-Session-ID': session_id
       },
       body: JSON.stringify({

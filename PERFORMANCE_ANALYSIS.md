@@ -1,4 +1,4 @@
-# Performance Analysis - claude-mem
+# Performance Analysis - mem-claude
 
 ## Summary
 Analysis of performance bottlenecks and optimization opportunities identified in the codebase.

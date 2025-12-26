@@ -1,5 +1,5 @@
 /**
- * Unified Error Handling System for claude-mem
+ * Unified Error Handling System for mem-claude
  * 
  * Provides standardized error types, handling patterns, and recovery strategies
  * to ensure consistent error management across the application.

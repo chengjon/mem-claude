@@ -50,7 +50,7 @@ export class SettingsDefaultsManager {
     CLAUDE_MEM_WORKER_HOST: '127.0.0.1',
     CLAUDE_MEM_SKIP_TOOLS: 'ListMcpResourcesTool,SlashCommand,Skill,TodoWrite,AskUserQuestion',
     // System Configuration
-    CLAUDE_MEM_DATA_DIR: join(homedir(), '.claude-mem'),
+    CLAUDE_MEM_DATA_DIR: join(homedir(), '.mem-claude'),
     CLAUDE_MEM_LOG_LEVEL: 'INFO',
     CLAUDE_MEM_PYTHON_VERSION: '3.13',
     CLAUDE_CODE_PATH: '', // Empty means auto-detect via 'which claude'

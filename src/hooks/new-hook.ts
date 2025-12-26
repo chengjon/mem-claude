@@ -54,7 +54,7 @@ async function newHook(input?: UserPromptSubmitInput): Promise<void> {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
-        'User-Agent': 'claude-mem-new-hook',
+        'User-Agent': 'mem-claude-new-hook',
         'X-Session-ID': session_id
       },
       body: JSON.stringify({
@@ -142,7 +142,7 @@ async function newHook(input?: UserPromptSubmitInput): Promise<void> {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
-        'User-Agent': 'claude-mem-new-hook',
+        'User-Agent': 'mem-claude-new-hook',
         'X-Session-ID': session_id
       },
       body: JSON.stringify({ 

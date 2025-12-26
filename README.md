@@ -17,7 +17,7 @@
 
 ```bash
 /plugin marketplace add chengjon/mem-claude
-/plugin install claude-mem
+/plugin install mem-claude
 ```
 
 重启Claude Code，上下文将自动从之前的会话中加载。
@@ -334,11 +334,11 @@ context = mem_integration.get_context("Python数据库连接问题")
 
 ## 📊 数据存储位置
 
-- **数据库**: `~/.claude-mem/claude-mem.db`
-- **PID文件**: `~/.claude-mem/.worker.pid`
-- **端口文件**: `~/.claude-mem/.worker.port`
-- **日志文件**: `~/.claude-mem/logs/worker-YYYY-MM-DD.log`
-- **配置文件**: `~/.claude-mem/settings.json`
+- **数据库**: `~/.mem-claude/mem-claude.db`
+- **PID文件**: `~/.mem-claude/.worker.pid`
+- **端口文件**: `~/.mem-claude/.worker.port`
+- **日志文件**: `~/.mem-claude/logs/worker-YYYY-MM-DD.log`
+- **配置文件**: `~/.mem-claude/settings.json`
 
 环境变量覆盖：
 ```bash
@@ -366,13 +366,13 @@ kill -9 $(lsof -t -i:37777)
 **看不到对话记录：**
 ```bash
 # 检查数据库文件
-ls -la ~/.claude-mem/
+ls -la ~/.mem-claude/
 
 # 查看服务日志
 ./mem.sh logs
 
 # 确认插件已安装
-/plugin list | grep claude-mem
+/plugin list | grep mem-claude
 ```
 
 **关键词搜索不工作：**

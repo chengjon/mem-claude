@@ -1,4 +1,4 @@
-/* To @claude: be vigilant about only leaving evergreen context in this file, claude-mem handles working context separately. */
+/* To @claude: be vigilant about only leaving evergreen context in this file, mem-claude handles working context separately. */
 
 # Claude-Mem: AI Development Instructions
 
@@ -14,7 +14,7 @@ Claude-mem is a Claude Code plugin providing persistent memory across sessions. 
 
 **Worker Service** (`src/services/worker-service.ts`) - Express API on port 37777, Bun-managed, handles AI processing asynchronously
 
-**Database** (`src/services/sqlite/`) - SQLite3 at `~/.claude-mem/claude-mem.db` with FTS5 full-text search
+**Database** (`src/services/sqlite/`) - SQLite3 at `~/.mem-claude/mem-claude.db` with FTS5 full-text search
 
 **Search Skill** (`plugin/skills/mem-search/SKILL.md`) - HTTP API for searching past work, auto-invoked when users ask about history
 
@@ -26,7 +26,7 @@ Claude-mem is a Claude Code plugin providing persistent memory across sessions. 
 
 **Dual-Tag System** for meta-observation control:
 - `<private>content</private>` - User-level privacy control (manual, prevents storage)
-- `<claude-mem-context>content</claude-mem-context>` - System-level tag (auto-injected observations, prevents recursive storage)
+- `<mem-claude-context>content</mem-claude-context>` - System-level tag (auto-injected observations, prevents recursive storage)
 
 **Implementation**: Tag stripping happens at hook layer (edge processing) before data reaches worker/database. See `src/utils/tag-stripping.ts` for shared utilities.
 
@@ -40,7 +40,7 @@ npm run build-and-sync        # Build, sync to marketplace, restart worker
 
 ## Configuration
 
-Settings are managed in `~/.claude-mem/settings.json`. The file is auto-created with defaults on first run.
+Settings are managed in `~/.mem-claude/settings.json`. The file is auto-created with defaults on first run.
 
 **Core Settings:**
 - `CLAUDE_MEM_MODEL` - Model for observations/summaries (default: claude-sonnet-4-5)
@@ -49,7 +49,7 @@ Settings are managed in `~/.claude-mem/settings.json`. The file is auto-created 
 - `CLAUDE_MEM_WORKER_HOST` - Worker bind address (default: 127.0.0.1, use 0.0.0.0 for remote access)
 
 **System Configuration:**
-- `CLAUDE_MEM_DATA_DIR` - Data directory location (default: ~/.claude-mem)
+- `CLAUDE_MEM_DATA_DIR` - Data directory location (default: ~/.mem-claude)
 - `CLAUDE_MEM_LOG_LEVEL` - Log verbosity: DEBUG, INFO, WARN, ERROR, SILENT (default: INFO)
 
 ## File Locations
@@ -57,8 +57,8 @@ Settings are managed in `~/.claude-mem/settings.json`. The file is auto-created 
 - **Source**: `<project-root>/src/`
 - **Built Plugin**: `<project-root>/plugin/`
 - **Installed Plugin**: `~/.claude/plugins/marketplaces/chengjon/`
-- **Database**: `~/.claude-mem/claude-mem.db`
-- **Chroma**: `~/.claude-mem/chroma/`
+- **Database**: `~/.mem-claude/mem-claude.db`
+- **Chroma**: `~/.mem-claude/chroma/`
 
 ## Requirements
 
@@ -68,7 +68,7 @@ Settings are managed in `~/.claude-mem/settings.json`. The file is auto-created 
 
 ## Documentation
 
-**Public Docs**: https://docs.claude-mem.ai (Mintlify)
+**Public Docs**: https://docs.mem-claude.ai (Mintlify)
 **Source**: `docs/public/` - MDX files, edit `docs.json` for navigation
 **Deploy**: Auto-deploys from GitHub on push to main
 

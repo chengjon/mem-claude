@@ -12,7 +12,7 @@ async function main() {
       if (result.success) {
         logger.info('WORKER', `Worker started (PID: ${result.pid})`);
         const date = new Date().toISOString().slice(0, 10);
-        logger.info('WORKER', `Logs: ~/.claude-mem/logs/worker-${date}.log`);
+        logger.info('WORKER', `Logs: ~/.mem-claude/logs/worker-${date}.log`);
         process.exit(0);
       } else {
         logger.error('WORKER', `Failed to start: ${result.error}`);

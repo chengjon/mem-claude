@@ -10,7 +10,7 @@ import { getWorkerPort } from '../../src/shared/worker-utils.js';
 
 describe('Context Injection (SessionStart)', () => {
   const WORKER_PORT = getWorkerPort();
-  const PROJECT_NAME = 'claude-mem';
+  const PROJECT_NAME = 'mem-claude';
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -21,7 +21,7 @@ describe('Context Injection (SessionStart)', () => {
     // Session starts → Hook calls worker → Worker queries database → Returns formatted context
 
     // Setup: Mock fetch to simulate worker response
-    const mockContext = `# [claude-mem] recent context
+    const mockContext = `# [mem-claude] recent context
 
 ## Recent Work (2 observations)
 
@@ -77,7 +77,7 @@ Files: /project/src/services/search.ts`;
 
   it('handles empty observations gracefully', async () => {
     // Setup: Mock fetch to simulate no observations available
-    const emptyContext = `# [claude-mem] recent context
+    const emptyContext = `# [mem-claude] recent context
 
 No observations found for this project.`;
 
@@ -100,7 +100,7 @@ No observations found for this project.`;
 
   it('supports colored output when requested', async () => {
     // Setup: Mock fetch to simulate colored response
-    const coloredContext = `# [claude-mem] recent context
+    const coloredContext = `# [mem-claude] recent context
 
 ## Recent Work (1 observation)
 

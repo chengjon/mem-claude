@@ -31,7 +31,7 @@ try {
   logger.warn('BRANCH_MANAGER', 'Could not read plugin.json, using default author');
 }
 
-const INSTALLED_PLUGIN_PATH = join(homedir(), '.claude', 'plugins', 'marketplaces', pluginAuthor, 'claude-mem');
+const INSTALLED_PLUGIN_PATH = join(homedir(), '.claude', 'plugins', 'marketplaces', pluginAuthor, 'mem-claude');
 
 /**
  * Get installed plugin path (for external use)
@@ -218,7 +218,7 @@ export async function switchBranch(targetBranch: string): Promise<SwitchResult> 
       to: targetBranch
     });
 
-    // 1. Discard local changes (safe - user data is at ~/.claude-mem/)
+    // 1. Discard local changes (safe - user data is at ~/.mem-claude/)
     logger.debug('BRANCH', 'Discarding local changes');
     execGit(['checkout', '--', '.']);
     execGit(['clean', '-fd']); // Remove untracked files too

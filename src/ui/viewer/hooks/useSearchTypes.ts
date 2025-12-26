@@ -1,7 +1,7 @@
 /**
  * useSearchTypes Hook
  *
- * Handles different search types for claude-mem viewer.
+ * Handles different search types for mem-claude viewer.
  * Provides API calls for the new search functionality with:
  * - Abort controller for race condition prevention
  * - Debouncing for performance

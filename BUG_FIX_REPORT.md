@@ -81,10 +81,10 @@ function showContextLoadedMessage(context: string, port: number, project: string
 npm run build-and-sync
 
 # 2. 验证插件配置
-cat ~/.claude/plugins/installed_plugins.json | jq '.plugins["claude-mem@chengjon"]'
+cat ~/.claude/plugins/installed_plugins.json | jq '.plugins["mem-claude@chengjon"]'
 
 # 3. 确认安装路径正确
-ls -la ~/.claude/plugins/cache/chengjon/claude-mem/7.4.6/
+ls -la ~/.claude/plugins/cache/chengjon/mem-claude/7.4.6/
 ```
 
 ---
@@ -95,7 +95,7 @@ ls -la ~/.claude/plugins/cache/chengjon/claude-mem/7.4.6/
 
 **错误信息:**
 ```
-Plugin hook "node "/root/.claude/plugins/cache/chengjon/claude-mem/7.4.5/scripts/save-hook.js"" failed to start
+Plugin hook "node "/root/.claude/plugins/cache/chengjon/mem-claude/7.4.5/scripts/save-hook.js"" failed to start
 ```
 
 **原因:** 旧版本缓存 (7.4.5) 的 hook 文件路径已被清理
@@ -103,7 +103,7 @@ Plugin hook "node "/root/.claude/plugins/cache/chengjon/claude-mem/7.4.5/scripts
 **修复:**
 ```bash
 # 清理旧缓存
-rm -rf /root/.claude/plugins/cache/chengjon/claude-mem/7.4.5
+rm -rf /root/.claude/plugins/cache/chengjon/mem-claude/7.4.5
 
 # 重新同步到新版本
 npm run sync-marketplace
@@ -122,9 +122,9 @@ npm run sync-marketplace
 
 1. ✅ **清理旧缓存**
    ```bash
-   rm -rf /root/.claude/plugins/cache/chengjon/claude-mem/7.4.5
-   rm -rf /root/.claude/plugins/cache/chengjon/claude-mem
-   mkdir -p /root/.claude/plugins/cache/chengjon/claude-mem
+   rm -rf /root/.claude/plugins/cache/chengjon/mem-claude/7.4.5
+   rm -rf /root/.claude/plugins/cache/chengjon/mem-claude
+   mkdir -p /root/.claude/plugins/cache/chengjon/mem-claude
    ```
 
 2. ✅ **修复 plugin.json 配置**
@@ -163,7 +163,7 @@ npm run sync-marketplace
 1. **通过 UI 更新** - 访问 http://localhost:37777
 2. **通过 git 更新** - 如果从 git 仓库安装：
    ```bash
-   cd ~/.claude/plugins/cache/chengjon/claude-mem/7.4.6
+   cd ~/.claude/plugins/cache/chengjon/mem-claude/7.4.6
    git pull origin main
    npm install
    npm run worker:restart

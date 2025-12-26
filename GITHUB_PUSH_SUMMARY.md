@@ -83,7 +83,7 @@ git push origin main
 
 1. **推送至GitHub**:
    ```bash
-   cd /opt/iflow/claude-mem
+   cd /opt/iflow/mem-claude
    git push origin main
    ```
 

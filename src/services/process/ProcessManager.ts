@@ -88,7 +88,7 @@ export class ProcessManager {
         //
         // Security: All paths (bunPath, script, MARKETPLACE_ROOT) are application-controlled system paths,
         // not user input. If an attacker could modify these paths, they would already have full filesystem
-        // access including direct access to ~/.claude-mem/claude-mem.db. Nevertheless, we properly escape
+        // access including direct access to ~/.mem-claude/mem-claude.db. Nevertheless, we properly escape
         // all values for PowerShell to follow security best practices.
         const escapedBunPath = this.escapePowerShellString(bunPath);
         const escapedScript = this.escapePowerShellString(script);
@@ -370,7 +370,7 @@ export class ProcessManager {
       // Check if process is still alive
       if (!this.isProcessAlive(pid)) {
         const errorMsg = isWindows
-          ? `Process died during startup\n\nTroubleshooting:\n1. Check Task Manager for zombie 'bun.exe' or 'node.exe' processes\n2. Verify port ${port} is not in use: netstat -ano | findstr ${port}\n3. Check worker logs in ~/.claude-mem/logs/\n4. See GitHub issues: #363, #367, #371, #373\n5. Docs: https://docs.claude-mem.ai/troubleshooting/windows-issues`
+          ? `Process died during startup\n\nTroubleshooting:\n1. Check Task Manager for zombie 'bun.exe' or 'node.exe' processes\n2. Verify port ${port} is not in use: netstat -ano | findstr ${port}\n3. Check worker logs in ~/.mem-claude/logs/\n4. See GitHub issues: #363, #367, #371, #373\n5. Docs: https://docs.mem-claude.ai/troubleshooting/windows-issues`
           : 'Process died during startup';
         return { success: false, error: errorMsg };
       }
@@ -391,7 +391,7 @@ export class ProcessManager {
     }
 
     const timeoutMsg = isWindows
-      ? `Worker failed to start on Windows (readiness check timed out after ${adjustedTimeout}ms)\n\nTroubleshooting:\n1. Check Task Manager for zombie 'bun.exe' or 'node.exe' processes\n2. Verify port ${port} is not in use: netstat -ano | findstr ${port}\n3. Check worker logs in ~/.claude-mem/logs/\n4. See GitHub issues: #363, #367, #371, #373\n5. Docs: https://docs.claude-mem.ai/troubleshooting/windows-issues`
+      ? `Worker failed to start on Windows (readiness check timed out after ${adjustedTimeout}ms)\n\nTroubleshooting:\n1. Check Task Manager for zombie 'bun.exe' or 'node.exe' processes\n2. Verify port ${port} is not in use: netstat -ano | findstr ${port}\n3. Check worker logs in ~/.mem-claude/logs/\n4. See GitHub issues: #363, #367, #371, #373\n5. Docs: https://docs.mem-claude.ai/troubleshooting/windows-issues`
       : `Readiness check timed out after ${adjustedTimeout}ms`;
 
     return { success: false, error: timeoutMsg };

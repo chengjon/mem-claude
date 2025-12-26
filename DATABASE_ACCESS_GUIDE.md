@@ -83,7 +83,7 @@ CREATE TABLE sdk_sessions (
 python3 --version
 
 # 数据库文件路径检查
-ls -la ~/.claude-mem/claude-mem.db
+ls -la ~/.mem-claude/mem-claude.db
 ```
 
 ### 2. 工具安装和使用

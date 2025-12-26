@@ -57,7 +57,7 @@ async function contextHook(input?: SessionStartInput): Promise<string> {
     const response = await fetch(url, { 
       signal: AbortSignal.timeout(HOOK_TIMEOUTS.DEFAULT),
       headers: {
-        'User-Agent': 'claude-mem-context-hook',
+        'User-Agent': 'mem-claude-context-hook',
         'X-Session-ID': input?.session_id || 'unknown'
       }
     });

@@ -192,20 +192,20 @@ plugin/
 
 ### 环境配置
 
-**设置文件**: `~/.claude-mem/settings.json`
+**设置文件**: `~/.mem-claude/settings.json`
 
 **核心配置项**:
 - `CLAUDE_MEM_MODEL` - AI模型 (默认: claude-sonnet-4-5)
 - `CLAUDE_MEM_WORKER_PORT` - Worker端口 (默认: 37777)
 - `CLAUDE_MEM_WORKER_HOST` - Worker地址 (默认: 127.0.0.1)
-- `CLAUDE_MEM_DATA_DIR` - 数据目录 (默认: ~/.claude-mem)
+- `CLAUDE_MEM_DATA_DIR` - 数据目录 (默认: ~/.mem-claude)
 - `CLAUDE_MEM_CONTEXT_OBSERVATIONS` - 注入观察数量 (默认: 50)
 
 ### 隐私标签系统
 
 **双标签系统**:
 - `<private>content</private>` - 用户隐私控制
-- `<claude-mem-context>content</claude-mem-context>` - 系统级标签
+- `<mem-claude-context>content</mem-claude-context>` - 系统级标签
 
 **实现位置**: `src/utils/tag-stripping.ts`
 
@@ -272,7 +272,7 @@ plugin/
 ```bash
 # 克隆和构建
 git clone https://github.com/chengjon/mem-claude.git
-cd claude-mem
+cd mem-claude
 npm install
 npm run build
 
@@ -302,8 +302,8 @@ npm run build-and-sync        # 构建，同步到市场，重启worker
 - **源码**: `<项目根>/src/`
 - **构建插件**: `<项目根>/plugin/`
 - **安装插件**: `~/.claude/plugins/marketplaces/chengjon/`
-- **数据库**: `~/.claude-mem/claude-mem.db`
-- **Chroma**: `~/.claude-mem/chroma/`
+- **数据库**: `~/.mem-claude/mem-claude.db`
+- **Chroma**: `~/.mem-claude/chroma/`
 
 ### 系统要求
 
@@ -441,7 +441,7 @@ Worker服务在 `http://localhost:37777` 提供以下端点:
 
 1. **Worker未启动** → `npm run worker:restart`
 2. **无上下文显示** → `npm run test:context`
-3. **数据库问题** → `sqlite3 ~/.claude-mem/claude-mem.db "PRAGMA integrity_check;"`
+3. **数据库问题** → `sqlite3 ~/.mem-claude/mem-claude.db "PRAGMA integrity_check;"`
 4. **搜索不工作** → 检查worker状态和API端点
 5. **构建失败** → 运行 `npm run build` 检查TypeScript错误
 
@@ -482,7 +482,7 @@ npm run bug-report
 4. 更新文档
 5. 提交Pull Request
 
-参见[开发指南](https://docs.claude-mem.ai/development)获取详细的工作流程。
+参见[开发指南](https://docs.mem-claude.ai/development)获取详细的工作流程。
 
 ## 支持
 

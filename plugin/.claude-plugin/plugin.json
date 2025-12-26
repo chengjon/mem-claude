@@ -1,6 +1,6 @@
 {
-  "name": "claude-mem",
-  "version": "7.4.6",
+  "name": "mem-claude",
+  "version": "1.0.0",
   "description": "Persistent memory system for Claude Code - seamlessly preserve context across sessions",
   "author": {
     "name": "chengjon"

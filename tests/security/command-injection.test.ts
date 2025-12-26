@@ -99,7 +99,7 @@ describe('Command Injection Security Tests', () => {
   describe('Command Array Argument Safety', () => {
     test('should use array-based arguments for all git commands', () => {
       // Read BranchManager source to verify no string interpolation
-      const branchManagerSource = Bun.file('/Users/alexnewman/Scripts/claude-mem/src/services/worker/BranchManager.ts');
+      const branchManagerSource = Bun.file('/Users/alexnewman/Scripts/mem-claude/src/services/worker/BranchManager.ts');
       const content = branchManagerSource.text();
 
       content.then(text => {
@@ -115,7 +115,7 @@ describe('Command Injection Security Tests', () => {
     });
 
     test('should never use shell=true with user input', () => {
-      const branchManagerSource = Bun.file('/Users/alexnewman/Scripts/claude-mem/src/services/worker/BranchManager.ts');
+      const branchManagerSource = Bun.file('/Users/alexnewman/Scripts/mem-claude/src/services/worker/BranchManager.ts');
       const content = branchManagerSource.text();
 
       content.then(text => {
@@ -213,7 +213,7 @@ describe('Command Injection Security Tests', () => {
 
   describe('NPM Command Safety', () => {
     test('should use array-based arguments for npm commands', () => {
-      const branchManagerSource = Bun.file('/Users/alexnewman/Scripts/claude-mem/src/services/worker/BranchManager.ts');
+      const branchManagerSource = Bun.file('/Users/alexnewman/Scripts/mem-claude/src/services/worker/BranchManager.ts');
       const content = branchManagerSource.text();
 
       content.then(text => {
@@ -247,7 +247,7 @@ describe('Process Manager Security Tests', () => {
   });
 
   test('should use array-based spawn arguments', () => {
-    const processManagerSource = Bun.file('/Users/alexnewman/Scripts/claude-mem/src/services/process/ProcessManager.ts');
+    const processManagerSource = Bun.file('/Users/alexnewman/Scripts/mem-claude/src/services/process/ProcessManager.ts');
     const content = processManagerSource.text();
 
     content.then(text => {
@@ -262,7 +262,7 @@ describe('Process Manager Security Tests', () => {
 
 describe('Bun Path Utility Security Tests', () => {
   test('should not use shell for bun version check', () => {
-    const bunPathSource = Bun.file('/Users/alexnewman/Scripts/claude-mem/src/utils/bun-path.ts');
+    const bunPathSource = Bun.file('/Users/alexnewman/Scripts/mem-claude/src/utils/bun-path.ts');
     const content = bunPathSource.text();
 
     content.then(text => {

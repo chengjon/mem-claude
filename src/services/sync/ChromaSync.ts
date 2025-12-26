@@ -83,7 +83,7 @@ export class ChromaSync {
   constructor(project: string) {
     this.project = project;
     this.collectionName = `cm__${project}`;
-    this.VECTOR_DB_DIR = path.join(os.homedir(), '.claude-mem', 'vector-db');
+    this.VECTOR_DB_DIR = path.join(os.homedir(), '.mem-claude', 'vector-db');
   }
 
   /**
@@ -125,7 +125,7 @@ export class ChromaSync {
       this.transport = new StdioClientTransport(transportOptions);
 
       this.client = new Client({
-        name: 'claude-mem-chroma-sync',
+        name: 'mem-claude-chroma-sync',
         version: '1.0.0'
       }, {
         capabilities: {}

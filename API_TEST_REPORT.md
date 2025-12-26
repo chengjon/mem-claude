@@ -3,7 +3,7 @@
 **Test Date**: December 25, 2025
 **API Version**: 7.4.5
 **Base URL**: http://localhost:37777
-**Database**: /root/.claude-mem/claude-mem.db
+**Database**: /root/.mem-claude/mem-claude.db
 **Database Size**: 991,232 bytes (968 KB)
 
 ---
@@ -142,7 +142,7 @@ Data: {
     "port": 37777
   },
   "database": {
-    "path": "/root/.claude-mem/claude-mem.db",
+    "path": "/root/.mem-claude/mem-claude.db",
     "size": 991232,
     "observations": 137,
     "sessions": 3,
@@ -317,7 +317,7 @@ Status: PASSED
 
 ## Database Statistics
 
-- **Database Path**: /root/.claude-mem/claude-mem.db
+- **Database Path**: /root/.mem-claude/mem-claude.db
 - **File Size**: 991,232 bytes (968 KB)
 - **Total Observations**: 137
 - **Total Sessions**: 3

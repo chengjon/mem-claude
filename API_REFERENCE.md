@@ -8,7 +8,7 @@ Claude-Mem provides a comprehensive HTTP API for searching and managing persiste
 
 **Version:** 7.4.6
 
-**Database:** SQLite + FTS5 full-text search at `~/.claude-mem/claude-mem.db`
+**Database:** SQLite + FTS5 full-text search at `~/.mem-claude/mem-claude.db`
 
 ---
 
@@ -164,7 +164,7 @@ curl "http://localhost:37777/api/context/timeline?anchor=123&depth_before=10&dep
 Generate context preview for a project:
 
 ```bash
-curl "http://localhost:37777/api/context/preview?project=claude-mem" | jq '.'
+curl "http://localhost:37777/api/context/preview?project=mem-claude" | jq '.'
 ```
 
 ### Context Injection
@@ -172,7 +172,7 @@ curl "http://localhost:37777/api/context/preview?project=claude-mem" | jq '.'
 Get formatted context for session injection:
 
 ```bash
-curl "http://localhost:37777/api/context/inject?project=claude-mem&colors=true" | jq '.'
+curl "http://localhost:37777/api/context/inject?project=mem-claude&colors=true" | jq '.'
 ```
 
 **Parameters:**
@@ -377,13 +377,13 @@ curl http://localhost:37777/health
 ps aux | grep worker-service
 
 # Check logs
-tail -f ~/.claude-mem/worker.log
+tail -f ~/.mem-claude/worker.log
 
 # Verify database has data
 curl http://localhost:37777/api/stats | jq '.'
 
 # Test database connection
-sqlite3 ~/.claude-mem/claude-mem.db "SELECT COUNT(*) FROM observations;"
+sqlite3 ~/.mem-claude/mem-claude.db "SELECT COUNT(*) FROM observations;"
 ```
 
 ---
@@ -397,7 +397,7 @@ sqlite3 ~/.claude-mem/claude-mem.db "SELECT COUNT(*) FROM observations;"
 curl "http://localhost:37777/api/search?query=test&filters.type=observation" | jq '.'
 
 # Filter by project
-curl "http://localhost:37777/api/search?query=api&filters.project=claude-mem" | jq '.'
+curl "http://localhost:37777/api/search?query=api&filters.project=mem-claude" | jq '.'
 ```
 
 ### Timeline by Query
@@ -498,7 +498,7 @@ Breaking changes are rare and documented in:
 For issues and questions:
 - GitHub Issues: https://github.com/chengjon/mem-claude/issues
 - Troubleshooting: Run `/mem-search help` in Claude Code
-- Logs: `~/.claude-mem/worker.log`
+- Logs: `~/.mem-claude/worker.log`
 
 ---
 

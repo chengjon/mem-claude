@@ -54,10 +54,10 @@ interface ContextConfig {
 
 /**
  * Load all context configuration settings
- * Priority: ~/.claude-mem/settings.json > env var > defaults
+ * Priority: ~/.mem-claude/settings.json > env var > defaults
  */
 function loadContextConfig(): ContextConfig {
-  const settingsPath = path.join(homedir(), '.claude-mem', 'settings.json');
+  const settingsPath = path.join(homedir(), '.mem-claude', 'settings.json');
   const settings = SettingsDefaultsManager.loadFromFile(settingsPath);
 
   try {

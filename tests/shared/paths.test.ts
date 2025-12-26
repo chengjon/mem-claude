@@ -30,8 +30,8 @@ describe('paths', () => {
       expect(paths.DATA_DIR.length).toBeGreaterThan(0);
     });
 
-    it('contains claude-mem in path', () => {
-      expect(paths.DATA_DIR).toContain('claude-mem');
+    it('contains mem-claude in path', () => {
+      expect(paths.DATA_DIR).toContain('mem-claude');
     });
 
     it('is consistent across multiple accesses', () => {
@@ -43,7 +43,7 @@ describe('paths', () => {
 
   describe('DB_PATH', () => {
     it('includes database filename', () => {
-      expect(paths.DB_PATH).toContain('claude-mem.db');
+      expect(paths.DB_PATH).toContain('mem-claude.db');
     });
 
     it('is a valid file path', () => {

@@ -1,6 +1,6 @@
 /**
  * Integration tests for user prompt tag stripping
- * Verifies that <private> and <claude-mem-context> tags are stripped
+ * Verifies that <private> and <mem-claude-context> tags are stripped
  * from user prompts before storage in the user_prompts table.
  */
 
@@ -18,8 +18,8 @@ describe('User Prompt Tag Stripping', () => {
     assert.strictEqual(stripMemoryTags(userPrompt), expected);
   });
 
-  it('should strip <claude-mem-context> tags from user prompts', () => {
-    const userPrompt = '<claude-mem-context>Past observations...</claude-mem-context> Continue working';
+  it('should strip <mem-claude-context> tags from user prompts', () => {
+    const userPrompt = '<mem-claude-context>Past observations...</mem-claude-context> Continue working';
     const expected = 'Continue working';
     assert.strictEqual(stripMemoryTags(userPrompt), expected);
   });
@@ -55,7 +55,7 @@ After`;
   });
 
   it('should handle mixed tags in user prompts', () => {
-    const userPrompt = '<claude-mem-context>Context</claude-mem-context> middle <private>private</private> end';
+    const userPrompt = '<mem-claude-context>Context</mem-claude-context> middle <private>private</private> end';
     const expected = 'middle  end';
     assert.strictEqual(stripMemoryTags(userPrompt), expected);
   });

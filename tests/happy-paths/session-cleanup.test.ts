@@ -204,7 +204,7 @@ describe('Session Cleanup (SessionEnd)', () => {
           reason: 'user_exit',
           duration_seconds: 1800,
           observations_count: 25,
-          project: 'claude-mem'
+          project: 'mem-claude'
         })
       }
     );
@@ -214,7 +214,7 @@ describe('Session Cleanup (SessionEnd)', () => {
     const requestBody = JSON.parse(fetchCall[1].body);
     expect(requestBody.duration_seconds).toBe(1800);
     expect(requestBody.observations_count).toBe(25);
-    expect(requestBody.project).toBe('claude-mem');
+    expect(requestBody.project).toBe('mem-claude');
   });
 
   it('handles worker being down during cleanup', async () => {

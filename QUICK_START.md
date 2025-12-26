@@ -208,7 +208,7 @@ curl "http://localhost:37777/api/timeline?query=refactoring" | jq '.'
 
 ### Settings File
 
-**Location**: `~/.claude-mem/settings.json`
+**Location**: `~/.mem-claude/settings.json`
 
 ```json
 {
@@ -225,7 +225,7 @@ curl "http://localhost:37777/api/timeline?query=refactoring" | jq '.'
   "CLAUDE_MEM_CONTEXT_OBSERVATIONS": 10,
 
   // Data directory
-  "CLAUDE_MEM_DATA_DIR": "~/.claude-mem"
+  "CLAUDE_MEM_DATA_DIR": "~/.mem-claude"
 }
 ```
 
@@ -233,7 +233,7 @@ curl "http://localhost:37777/api/timeline?query=refactoring" | jq '.'
 
 ```bash
 # Edit settings
-nano ~/.claude-mem/settings.json
+nano ~/.mem-claude/settings.json
 
 # Restart worker to apply
 npm run worker:restart
@@ -253,7 +253,7 @@ curl http://localhost:37777/health
 npm run worker:start
 
 # View logs
-tail -f ~/.claude-mem/logs/worker-service.log
+tail -f ~/.mem-claude/logs/worker-service.log
 
 # Restart worker
 npm run worker:restart
@@ -285,7 +285,7 @@ curl http://localhost:37777/api/readiness
 which bun
 
 # 2. Check worker logs
-tail -50 ~/.claude-mem/logs/worker-service.log
+tail -50 ~/.mem-claude/logs/worker-service.log
 
 # 3. Restart worker
 npm run worker:restart
@@ -304,7 +304,7 @@ curl http://localhost:37777/api/stats | jq '.database'
 ls -la ~/.claude/plugins/marketplaces/chengjon/
 
 # 2. Check for errors
-tail -50 ~/.claude-mem/logs/worker-service.log
+tail -50 ~/.mem-claude/logs/worker-service.log
 ```
 
 ---
@@ -414,7 +414,7 @@ curl http://localhost:37777/api/summaries?limit=5 | jq '.'
 ## 🔗 Resources
 
 ### Documentation
-- **Full Docs**: https://docs.claude-mem.ai
+- **Full Docs**: https://docs.mem-claude.ai
 - **GitHub**: https://github.com/chengjon/mem-claude
 - **Issues**: https://github.com/chengjon/mem-claude/issues
 
@@ -433,7 +433,7 @@ curl http://localhost:37777/api/search/help
 npm run worker:version
 
 # View logs
-tail -f ~/.claude-mem/logs/worker-service.log
+tail -f ~/.mem-claude/logs/worker-service.log
 
 # Run diagnostics
 npm run worker:doctor
@@ -469,8 +469,8 @@ npm run worker:status     # Check status
 npm run worker:logs       # View logs
 
 # Database Management
-ls -la ~/.claude-mem/claude-mem.db    # View database
-cp ~/.claude-mem/claude-mem.db ~/.claude-mem/backup.db  # Backup
+ls -la ~/.mem-claude/mem-claude.db    # View database
+cp ~/.mem-claude/mem-claude.db ~/.mem-claude/backup.db  # Backup
 
 # Health Checks
 curl http://localhost:37777/health           # Health status

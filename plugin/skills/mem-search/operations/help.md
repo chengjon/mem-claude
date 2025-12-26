@@ -55,7 +55,7 @@ Returns complete API documentation:
 Present as reference documentation:
 
 ```markdown
-## claude-mem Search API Reference
+## mem-claude Search API Reference
 
 Base URL: `http://localhost:37777/api`
 

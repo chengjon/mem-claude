@@ -1,5 +1,5 @@
 /**
- * Build configuration utilities for claude-mem
+ * Build configuration utilities for mem-claude
  * Provides centralized configuration for build and deployment paths
  */
 
@@ -60,13 +60,13 @@ export function getBuildConfig(): BuildConfig {
     logger.warn('SYSTEM', 'Could not read plugin.json, using defaults');
   }
   
-  const currentPluginDir = path.join(pluginDir, pluginAuthor, 'claude-mem');
-  const currentCacheDir = path.join(cacheDir, pluginAuthor, 'claude-mem', pluginVersion);
+  const currentPluginDir = path.join(pluginDir, pluginAuthor, 'mem-claude');
+  const currentCacheDir = path.join(cacheDir, pluginAuthor, 'mem-claude', pluginVersion);
   
   return {
     version: pluginVersion,
     author: pluginAuthor,
-    pluginName: 'claude-mem',
+    pluginName: 'mem-claude',
     paths: {
       homeDir,
       claudeDir,

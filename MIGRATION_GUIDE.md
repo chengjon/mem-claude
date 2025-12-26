@@ -26,13 +26,13 @@
 #### 1. 卸载旧版本
 在Claude Code中运行：
 ```bash
-/plugin uninstall claude-mem
+/plugin uninstall mem-claude
 ```
 
 #### 2. 安装新版本
 ```bash
 /plugin marketplace add chengjon/mem-claude
-/plugin install claude-mem
+/plugin install mem-claude
 ```
 
 #### 3. 重启Claude Code
@@ -41,9 +41,9 @@
 ### 📊 数据保留
 
 **好消息**: 您的所有对话数据都安全保存在：
-- 数据库: `~/.claude-mem/claude-mem.db`
-- 设置: `~/.claude-mem/settings.json`
-- 日志: `~/.claude-mem/logs/`
+- 数据库: `~/.mem-claude/mem-claude.db`
+- 设置: `~/.mem-claude/settings.json`
+- 日志: `~/.mem-claude/logs/`
 
 这些数据路径保持不变，不受插件位置变更影响。
 
@@ -56,20 +56,20 @@
 cp -r ~/.claude/plugins/marketplaces/chengjon ~/.claude/plugins/marketplaces/chengjon-backup
 
 # 卸载旧插件
-/plugin uninstall claude-mem
+/plugin uninstall mem-claude
 
 # 安装新插件
 /plugin marketplace add chengjon/mem-claude
-/plugin install claude-mem
+/plugin install mem-claude
 ```
 
 ### 🔧 常见问题
 
 #### Q: 迁移后看不到旧对话记录？
-A: 检查数据目录是否存在：`ls ~/.claude-mem/`
+A: 检查数据目录是否存在：`ls ~/.mem-claude/`
 如果数据丢失，可以从备份恢复：
 ```bash
-cp ~/.claude/plugins/marketplaces/chengjon-backup/plugin/.install-version ~/.claude-mem/
+cp ~/.claude/plugins/marketplaces/chengjon-backup/plugin/.install-version ~/.mem-claude/
 ```
 
 #### Q: 插件安装失败？
