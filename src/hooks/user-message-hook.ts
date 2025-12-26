@@ -98,37 +98,26 @@ async function userMessageHook(): Promise<void> {
 }
 
 function showContextLoadedMessage(context: string, port: number, project: string): void {
-  logger.error('HOOK', 
-    "\n\n📝 Claude-Mem Context Loaded\n" +
-    "   ℹ️  Note: This appears as stderr but is informational only\n\n" +
-    context +
-    "\n\n💡 New! Wrap all or part of any message with <private> ... </private> to prevent storing sensitive information in your observation history.\n" +
-    "\n💬 Community https://discord.gg/J4wttp9vDu" +
-    `\n📺 Watch live in browser http://localhost:${port}/\n`
+  logger.error('HOOK',
+    `📝 Mem-Claude 上下文已加载\n` +
+    `ℹ️  注：此信息显示在 stderr 中，仅供参考\n` +
+    `${context}\n` +
+    `💡 提示：使用 <private>...</private> 标签包装敏感信息，防止存储到观察记录中\n` +
+    `📺 浏览器查看 http://localhost:${port}/`
   );
 }
 
 function showFirstTimeSetupMessage(): void {
   // Context not available yet - likely first run or worker starting up
-  logger.error('HOOK', `
----
-🎉  Note: This appears under Plugin Hook Error, but it's not an error. That's the only option for
-   user messages in Claude Code UI until a better method is provided.
----
-
-⚠️  Claude-Mem: First-Time Setup
-
-Dependencies are installing in the background. This only happens once.
-
-💡 TIPS:
-   • Memories will start generating while you work
-   • Use /init to write or update your CLAUDE.md for better project context
-   • Try /clear after one session to see what context looks like
-
-Thank you for installing Claude-Mem!
-
-This message was not added to your startup context, so you can continue working as normal.
-`);
+  logger.error('HOOK',
+    `⚠️  Mem-Claude：首次设置\n` +
+    `依赖正在后台安装，这只会发生一次。\n` +
+    `💡 提示：\n` +
+    `   • 工作时会自动生成记忆\n` +
+    `   • 使用 /init 编写或更新 CLAUDE.md 以获得更好的项目上下文\n` +
+    `   • 会话后尝试 /clear 查看上下文效果\n` +
+    `感谢安装 Mem-Claude！`
+  );
 }
 
 // Execute hook with error handling
