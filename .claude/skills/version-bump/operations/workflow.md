@@ -1,6 +1,6 @@
 # Detailed Version Bump Workflow
 
-Step-by-step process for bumping versions in the claude-mem project.
+Step-by-step process for bumping versions in the mem-claude project.
 
 ## Step 1: Analyze Changes
 
@@ -79,7 +79,7 @@ File: `package.json`
 
 ```json
 {
-  "name": "claude-mem",
+  "name": "mem-claude",
   "version": "4.2.9",
   ...
 }
@@ -93,7 +93,7 @@ File: `.claude-plugin/marketplace.json`
 
 ```json
 {
-  "name": "claude-mem",
+  "name": "mem-claude",
   "version": "4.2.9",
   ...
 }
@@ -107,7 +107,7 @@ File: `plugin/.claude-plugin/plugin.json`
 
 ```json
 {
-  "name": "claude-mem",
+  "name": "mem-claude",
   "version": "4.2.9",
   ...
 }

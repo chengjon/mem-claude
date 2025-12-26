@@ -55,8 +55,8 @@ What you expected to happen.
 
 ### Logs
 Worker logs are located at:
-- **Path**: `~/.claude-mem/logs/worker-YYYY-MM-DD.log`
-- **Example**: `~/.claude-mem/logs/worker-2025-12-14.log`
+- **Path**: `~/.mem-claude/logs/worker-YYYY-MM-DD.log`
+- **Example**: `~/.mem-claude/logs/worker-2025-12-14.log`
 
 Please paste relevant log entries (last 50 lines or error messages):
 

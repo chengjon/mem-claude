@@ -265,7 +265,7 @@ export function ContextSettingsModal({
           <h2>Settings</h2>
           <div className="header-controls">
             <a
-              href="https://docs.claude-mem.ai"
+              href="https://docs.mem-claude.ai"
               target="_blank"
               rel="noopener noreferrer"
               title="Documentation"

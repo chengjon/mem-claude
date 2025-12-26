@@ -128,7 +128,7 @@ try {
   try {
     if (existsSync(installedPluginsPath)) {
       const installedPlugins = JSON.parse(readFileSync(installedPluginsPath, 'utf-8'));
-      const pluginKey = 'claude-mem@chengjon';
+      const pluginKey = 'mem-claude@chengjon';
 
       // Get current git commit SHA
       let gitCommitSha = '';
