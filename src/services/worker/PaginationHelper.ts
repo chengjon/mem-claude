@@ -68,16 +68,42 @@ export class PaginationHelper {
   }
 
   /**
-   * Get paginated observations
+   * Check if an observation is a meaningful observation (not a tool call)
+   * Tool calls have titles like "Tool: Read", "Tool: Edit", etc.
    */
-  getObservations(offset: number, limit: number, project?: string): PaginatedResult<Observation> {
-    const result = this.paginate<Observation>(
+  private isMeaningfulObservation(obs: Observation): boolean {
+    if (!obs.title) return false;
+    // Filter out tool call observations
+    if (obs.title.startsWith('Tool:')) return false;
+    // Filter out very short or empty observations
+    if (!obs.narrative && !obs.text && (!obs.facts || obs.facts.length === 0)) return false;
+    return true;
+  }
+
+  /**
+   * Get paginated observations
+   * @param offset - Pagination offset
+   * @param limit - Pagination limit
+   * @param project - Optional project filter
+   * @param includeToolCalls - Whether to include tool call observations (default: false)
+   * @param type - Optional observation type filter (bugfix, feature, refactor, change, discovery, decision)
+   */
+  getObservations(offset: number, limit: number, project?: string, includeToolCalls: boolean = false, type?: string): PaginatedResult<Observation> {
+    let result = this.paginate<Observation>(
       'observations',
       'id, sdk_session_id, project, type, title, subtitle, narrative, text, facts, concepts, files_read, files_modified, prompt_number, created_at, created_at_epoch',
       offset,
       limit,
-      project
+      project,
+      type
     );
+
+    // Filter out tool calls unless explicitly requested
+    if (!includeToolCalls) {
+      const originalCount = result.items.length;
+      result.items = result.items.filter(obs => this.isMeaningfulObservation(obs));
+      result.hasMore = result.hasMore || (result.items.length < originalCount);
+    }
 
     // Strip project paths from file paths before returning
     return {
@@ -168,16 +194,26 @@ export class PaginationHelper {
     columns: string,
     offset: number,
     limit: number,
-    project?: string
+    project?: string,
+    type?: string
   ): PaginatedResult<T> {
     const db = this.dbManager.getSessionStore().db;
 
     let query = `SELECT ${columns} FROM ${table}`;
     const params: any[] = [];
 
+    const conditions: string[] = [];
     if (project) {
-      query += ' WHERE project = ?';
+      conditions.push('project = ?');
       params.push(project);
+    }
+    if (type) {
+      conditions.push('type = ?');
+      params.push(type);
+    }
+
+    if (conditions.length > 0) {
+      query += ' WHERE ' + conditions.join(' AND ');
     }
 
     query += ' ORDER BY created_at_epoch DESC LIMIT ? OFFSET ?';

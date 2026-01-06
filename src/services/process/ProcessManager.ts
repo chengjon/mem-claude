@@ -6,6 +6,7 @@ import { homedir } from 'os';
 import { DATA_DIR } from '../../shared/paths.js';
 import { getBunPath, isBunAvailable } from '../../utils/bun-path.js';
 import { SettingsDefaultsManager } from '../../shared/SettingsDefaultsManager.js';
+import { logger } from '../../utils/logger.js';
 
 const PID_FILE = join(DATA_DIR, 'worker.pid');
 const LOG_DIR = join(DATA_DIR, 'logs');

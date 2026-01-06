@@ -134,7 +134,8 @@ if (stdin.isTTY || forceColors) {
   stdin.on("data", (chunk) => (input += chunk));
   stdin.on("end", async () => {
     try {
-      const parsed = input.trim() ? JSON.parse(input) : undefined;
+      const parsed = input.trim() ? JSON.parse(input) as SessionStartInput : undefined;
+      const sessionId = parsed?.session_id;
       const text = await contextHook(parsed);
 
       logger.info('HOOK', 
@@ -148,8 +149,7 @@ if (stdin.isTTY || forceColors) {
       process.exit(0);
     } catch (error: any) {
       logger.error('HOOK', 'Context hook failed in pipeline mode', { 
-        error: error.message,
-        sessionId: input?.session_id 
+        error: error.message 
       });
       // Output empty context on error to maintain compatibility
       logger.info('HOOK', 

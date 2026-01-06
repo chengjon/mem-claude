@@ -16,6 +16,7 @@
 
 import { spawn, ChildProcess, execSync } from 'child_process';
 import path from 'path';
+import { logger } from '../utils/logger.js';
 
 const isWindows = process.platform === 'win32';
 
@@ -27,7 +28,7 @@ let isShuttingDown = false;
 
 function log(msg: string) {
   const timestamp = new Date().toISOString();
-  logger.info(`[${timestamp}] [wrapper] ${msg}`);
+  console.log(`[${timestamp}] [WRAPPER] ${msg}`);
 }
 
 function spawnInner() {

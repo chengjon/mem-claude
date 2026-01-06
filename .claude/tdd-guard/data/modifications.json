@@ -1,0 +1,11 @@
+{
+  "session_id": "7d916173-abfd-4dbf-8614-9fea96b0035b",
+  "transcript_path": "/root/.claude/projects/-opt-iflow-claude-mem/7d916173-abfd-4dbf-8614-9fea96b0035b.jsonl",
+  "hook_event_name": "PreToolUse",
+  "tool_name": "Edit",
+  "tool_input": {
+    "file_path": "/opt/iflow/claude-mem/src/services/sqlite/SessionStore.ts",
+    "old_string": "        logger.error('DB', ' Error getting boundary observations:', err.message, project ? `(project: ${project})` : '(all projects)');",
+    "new_string": "        logger.error('DB', 'Error getting boundary observations:', err.message, project ? `(project: ${project})` : '(all projects)');"
+  }
+}

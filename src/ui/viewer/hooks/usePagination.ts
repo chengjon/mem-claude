@@ -2,13 +2,7 @@ import { useState, useCallback, useRef } from 'react';
 import { Observation, Summary, UserPrompt, AiResponse, ToolExecution } from '../types';
 import { UI } from '../constants/ui';
 import { API_ENDPOINTS } from '../constants/api';
-
-// Simple logger for client-side hooks
-const hookLogger = {
-  error: (component: string, message: string, error?: any) => {
-    console.error(`[${component}] ${message}`, error || '');
-  }
-};
+import { logError } from '../utils/hook-logger';
 
 interface PaginationState {
   isLoading: boolean;
@@ -18,71 +12,72 @@ interface PaginationState {
 type DataType = 'observations' | 'summaries' | 'prompts' | 'aiResponses' | 'toolExecutions';
 type DataItem = Observation | Summary | UserPrompt | AiResponse | ToolExecution;
 
-/**
- * Generic pagination hook for observations, summaries, and prompts
- */
 function usePaginationFor(
-  endpoint: string, 
-  dataType: DataType, 
+  endpoint: string,
+  dataType: DataType,
   currentFilter: string,
   keywords?: string[],
-  logic?: 'AND' | 'OR'
+  logic?: 'AND' | 'OR',
+  includeToolCalls?: boolean,
+  observationType?: string
 ) {
   const [state, setState] = useState<PaginationState>({
     isLoading: false,
     hasMore: true
   });
 
-  // Track offset and filter in refs to handle synchronous resets
   const offsetRef = useRef(0);
   const lastFilterRef = useRef(currentFilter);
   const lastKeywordsRef = useRef(keywords);
+  const lastIncludeToolCallsRef = useRef(includeToolCalls);
+  const lastObservationTypeRef = useRef(observationType);
   const stateRef = useRef(state);
 
-  /**
-   * Load more items from the API
-   * Automatically resets offset to 0 if filter has changed
-   */
   const loadMore = useCallback(async (): Promise<DataItem[]> => {
-    // Check if filter or keywords changed - if so, reset pagination synchronously
     const filterChanged = lastFilterRef.current !== currentFilter;
     const keywordsChanged = JSON.stringify(lastKeywordsRef.current) !== JSON.stringify(keywords);
+    const toolCallsChanged = lastIncludeToolCallsRef.current !== includeToolCalls;
+    const typeChanged = lastObservationTypeRef.current !== observationType;
 
-    if (filterChanged || keywordsChanged) {
+    if (filterChanged || keywordsChanged || toolCallsChanged || typeChanged) {
       offsetRef.current = 0;
       lastFilterRef.current = currentFilter;
       lastKeywordsRef.current = keywords;
+      lastIncludeToolCallsRef.current = includeToolCalls;
+      lastObservationTypeRef.current = observationType;
 
-      // Reset state both in React state and ref synchronously
       const newState = { isLoading: false, hasMore: true };
       setState(newState);
-      stateRef.current = newState;  // Update ref immediately to avoid stale checks
+      stateRef.current = newState;
     }
 
-    // Prevent concurrent requests using ref (always current)
-    // Skip this check if we just reset the filter - we want to load the first page
-    if (!filterChanged && !keywordsChanged && (stateRef.current.isLoading || !stateRef.current.hasMore)) {
+    if (!filterChanged && !keywordsChanged && !toolCallsChanged && !typeChanged && (stateRef.current.isLoading || !stateRef.current.hasMore)) {
       return [];
     }
 
     setState(prev => ({ ...prev, isLoading: true }));
 
     try {
-      // Build query params using current offset from ref
       const params = new URLSearchParams({
         offset: offsetRef.current.toString(),
         limit: UI.PAGINATION_PAGE_SIZE.toString()
       });
 
-      // Add project filter if present
       if (currentFilter) {
         params.append('project', currentFilter);
       }
 
-      // Add keywords and logic for AI responses (and other endpoints that support it)
       if (keywords && keywords.length > 0) {
         params.append('keywords', keywords.join(','));
         params.append('logic', logic || 'AND');
+      }
+
+      if (includeToolCalls) {
+        params.append('includeToolCalls', 'true');
+      }
+
+      if (observationType) {
+        params.append('type', observationType);
       }
 
       const response = await fetch(`${endpoint}?${params}`);
@@ -91,7 +86,7 @@ function usePaginationFor(
         throw new Error(`Failed to load ${dataType}: ${response.statusText}`);
       }
 
-      const data = await response.json() as { items: DataItem[], hasMore: boolean };
+      const data = (await response.json()) as { items: DataItem[], hasMore: boolean };
 
       setState(prev => ({
         ...prev,
@@ -99,16 +94,15 @@ function usePaginationFor(
         hasMore: data.hasMore
       }));
 
-      // Increment offset after successful load
       offsetRef.current += UI.PAGINATION_PAGE_SIZE;
 
       return data.items;
     } catch (error) {
-      hookLogger.error('PAGINATION', `Failed to load ${dataType}:`, error);
+      logError('PAGINATION', `Failed to load ${dataType}:`, error);
       setState(prev => ({ ...prev, isLoading: false }));
       return [];
     }
-  }, [currentFilter, keywords, logic, endpoint, dataType]);
+  }, [currentFilter, keywords, logic, includeToolCalls, observationType, endpoint, dataType]);
 
   return {
     ...state,
@@ -117,14 +111,16 @@ function usePaginationFor(
 }
 
 /**
- * Hook for paginating observations with optional keyword filtering
+ * Hook for paginating observations with optional keyword filtering and other filters
  */
 export function usePagination(
   currentFilter: string, 
   keywords?: string[], 
-  logic?: 'AND' | 'OR'
+  logic?: 'AND' | 'OR',
+  includeToolCalls?: boolean,
+  observationType?: string
 ) {
-  const observations = usePaginationFor(API_ENDPOINTS.OBSERVATIONS, 'observations', currentFilter);
+  const observations = usePaginationFor(API_ENDPOINTS.OBSERVATIONS, 'observations', currentFilter, undefined, undefined, includeToolCalls, observationType);
   const summaries = usePaginationFor(API_ENDPOINTS.SUMMARIES, 'summaries', currentFilter);
   const prompts = usePaginationFor(API_ENDPOINTS.PROMPTS, 'prompts', currentFilter);
   const aiResponses = usePaginationFor(API_ENDPOINTS.AI_RESPONSES, 'aiResponses', currentFilter, keywords, logic);

@@ -73,6 +73,10 @@ export class DatabaseManager {
     return this.sessionStore;
   }
 
+  getDb() {
+    return this.getSessionStore().db;
+  }
+
   /**
    * Get SessionSearch instance (throws if not initialized)
    */

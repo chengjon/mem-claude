@@ -1,12 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { Settings } from '../types';
-
-// Simple logger for client-side hooks
-const hookLogger = {
-  error: (component: string, message: string, error?: any) => {
-    console.error(`[${component}] ${message}`, error || '');
-  }
-};
+import { logError } from '../utils/hook-logger';
 
 interface UseContextPreviewResult {
   preview: string;
@@ -25,18 +19,17 @@ export function useContextPreview(settings: Settings): UseContextPreviewResult {
   const [projects, setProjects] = useState<string[]>([]);
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
 
-  // Fetch projects on mount
   useEffect(() => {
     async function fetchProjects() {
       try {
         const response = await fetch('/api/projects');
-        const data = await response.json();
+        const data = (await response.json()) as { projects?: string[] };
         if (data.projects && data.projects.length > 0) {
           setProjects(data.projects);
-          setSelectedProject(data.projects[0]); // Default to first project
+          setSelectedProject(data.projects[0]);
         }
       } catch (err) {
-        hookLogger.error('CONTEXT_PREVIEW', 'Failed to fetch projects:', err);
+        logError('CONTEXT_PREVIEW', 'Failed to fetch projects:', err);
       }
     }
     fetchProjects();

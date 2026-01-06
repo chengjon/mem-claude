@@ -68,7 +68,7 @@ async function userMessageHook(): Promise<void> {
       
       // For user message hook, we handle errors gracefully
       httpError.severity = ErrorSeverity.LOW;
-      httpError.action = ErrorAction.IGNORE;
+      httpError.action = ErrorAction.LOG_ONLY;
       
       throw httpError;
     }

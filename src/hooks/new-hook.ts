@@ -11,6 +11,13 @@ export interface UserPromptSubmitInput {
   prompt: string;
 }
 
+interface SessionInitResponse {
+  sessionDbId: number;
+  promptNumber: number;
+  skipped: boolean;
+  reason?: string;
+}
+
 /**
  * New Hook Main Logic
  * 
@@ -94,7 +101,7 @@ async function newHook(input?: UserPromptSubmitInput): Promise<void> {
       throw httpError;
     }
 
-    const result = await initResponse.json();
+    const result = await initResponse.json() as SessionInitResponse;
     logger.debug('HOOK', 'Session initialized successfully', {
       sessionId: session_id,
       sessionDbId: result.sessionDbId,
@@ -130,7 +137,7 @@ async function newHook(input?: UserPromptSubmitInput): Promise<void> {
     return;
   }
 
-  logger.error('HOOK', `Session ${sessionDbId}, prompt #${promptNumber}`);
+  logger.info('HOOK', `Session ${sessionDbId}, prompt #${promptNumber}`);
 
   // Strip leading slash from commands for memory agent
   // /review 101 → review 101 (more semantic for observations)

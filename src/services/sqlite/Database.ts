@@ -1,5 +1,6 @@
 import { Database } from 'bun:sqlite';
 import { DATA_DIR, DB_PATH, ensureDir } from '../../shared/paths.js';
+import { logger } from '../../utils/logger.js';
 
 // SQLite configuration constants
 const SQLITE_MMAP_SIZE_BYTES = 256 * 1024 * 1024; // 256MB
@@ -128,7 +129,7 @@ export class DatabaseManager {
 
     for (const migration of this.migrations) {
       if (migration.version > maxApplied) {
-        logger.info(`Applying migration ${migration.version}...`);
+        logger.info('DB', `Applying migration ${migration.version}...`);
 
         const transaction = this.db.transaction(() => {
           migration.up(this.db!);
@@ -138,7 +139,7 @@ export class DatabaseManager {
         });
 
         transaction();
-        logger.info(`Migration ${migration.version} applied successfully`);
+        logger.info('DB', `Migration ${migration.version} applied successfully`);
       }
     }
   }

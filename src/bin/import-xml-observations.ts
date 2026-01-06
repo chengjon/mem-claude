@@ -145,7 +145,7 @@ function parseObservation(xml: string): ObservationData | null {
 
     return observation;
   } catch (e) {
-    logger.error('SYSTEM', 'Error parsing observation:', e);
+    logger.error('IMPORT', 'Error parsing observation', null as any, e);
     return null;
   }
 }
@@ -176,7 +176,7 @@ function parseSummary(xml: string): SummaryData | null {
 
     return summary;
   } catch (e) {
-    logger.error('SYSTEM', 'Error parsing summary:', e);
+    logger.error('IMPORT', 'Error parsing summary', null as any, e);
     return null;
   }
 }
@@ -318,10 +318,10 @@ function main() {
         importedObs++;
 
         if (importedObs % 50 === 0) {
-          logger.info('SYSTEM', `Imported ${importedObs} observations...`);
+          logger.info('IMPORT', `Imported ${importedObs} observations...`);
         }
       } catch (e) {
-        logger.error('SYSTEM', `Error storing observation:`, e);
+        logger.error('IMPORT', 'Error storing observation', null as any, e);
         skipped++;
       }
       continue;
@@ -350,10 +350,10 @@ function main() {
         importedSum++;
 
         if (importedSum % 10 === 0) {
-          logger.info('SYSTEM', `Imported ${importedSum} summaries...`);
+          logger.info('IMPORT', `Imported ${importedSum} summaries...`);
         }
       } catch (e) {
-        logger.error('SYSTEM', `Error storing summary:`, e);
+        logger.error('IMPORT', 'Error storing summary', null as any, e);
         skipped++;
       }
       continue;

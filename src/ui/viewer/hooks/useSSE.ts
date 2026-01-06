@@ -2,18 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Observation, Summary, UserPrompt, StreamEvent } from '../types';
 import { API_ENDPOINTS } from '../constants/api';
 import { TIMING } from '../constants/timing';
-
-// Simple logger for client-side hooks (browser-compatible)
-const hookLogger = {
-  info: (component: string, message: string, data?: any) => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`[${component}] ${message}`, data || '');
-    }
-  },
-  error: (component: string, message: string, error?: any) => {
-    console.error(`[${component}] ${message}`, error || '');
-  }
-};
+import { uiLogger } from '../utils/ui-logger';
 
 export function useSSE() {
   const [observations, setObservations] = useState<Observation[]>([]);
@@ -37,7 +26,7 @@ export function useSSE() {
       eventSourceRef.current = eventSource;
 
       eventSource.onopen = () => {
-        hookLogger.info('SSE', ' Connected');
+        uiLogger.info('SSE', 'Connection opened');
         setIsConnected(true);
         // Clear any pending reconnect
         if (reconnectTimeoutRef.current) {
@@ -46,14 +35,14 @@ export function useSSE() {
       };
 
       eventSource.onerror = (error) => {
-        hookLogger.error('SSE', ' Connection error:', error);
+        uiLogger.error('SSE', 'Connection error:', error);
         setIsConnected(false);
         eventSource.close();
 
         // Reconnect after delay
         reconnectTimeoutRef.current = setTimeout(() => {
           reconnectTimeoutRef.current = undefined; // Clear before reconnecting
-          hookLogger.info('SSE', ' Attempting to reconnect...');
+          uiLogger.info('SSE', 'Attempting to reconnect...');
           connect();
         }, TIMING.SSE_RECONNECT_DELAY_MS);
       };
@@ -64,7 +53,7 @@ export function useSSE() {
 
           switch (data.type) {
             case 'initial_load':
-              hookLogger.info('SSE', ' Initial load:', {
+              uiLogger.info('SSE', 'Initial load:', {
                 projects: data.projects?.length || 0
               });
               // Only load projects list - data will come via pagination
@@ -73,37 +62,38 @@ export function useSSE() {
 
             case 'new_observation':
               if (data.observation) {
-                hookLogger.info('SSE', ' New observation:', data.observation.id);
-                setObservations(prev => [data.observation, ...prev]);
+                uiLogger.info('SSE', 'New observation:', data.observation.id);
+                const obs = data.observation as Observation;
+                setObservations(prev => [obs, ...prev]);
               }
               break;
 
             case 'new_summary':
               if (data.summary) {
-                const summary = data.summary;
-                hookLogger.info('SSE', ' New summary:', summary.id);
+                const summary = data.summary as Summary;
+                uiLogger.info('SSE', 'New summary:', summary.id);
                 setSummaries(prev => [summary, ...prev]);
               }
               break;
 
             case 'new_prompt':
               if (data.prompt) {
-                const prompt = data.prompt;
-                hookLogger.info('SSE', ' New prompt:', prompt.id);
+                const prompt = data.prompt as UserPrompt;
+                uiLogger.info('SSE', 'New prompt:', prompt.id);
                 setPrompts(prev => [prompt, ...prev]);
               }
               break;
 
             case 'processing_status':
               if (typeof data.isProcessing === 'boolean') {
-                hookLogger.info('SSE', ' Processing status:', data.isProcessing, 'Queue depth:', data.queueDepth);
+                uiLogger.info('SSE', 'Processing status:', data.isProcessing);
                 setIsProcessing(data.isProcessing);
-                setQueueDepth(data.queueDepth || 0);
+                setQueueDepth((data as any).queueDepth || 0);
               }
               break;
           }
         } catch (error) {
-          hookLogger.error('SSE', ' Failed to parse message:', error);
+          uiLogger.error('SSE', 'Failed to parse message:', error);
         }
       };
     };

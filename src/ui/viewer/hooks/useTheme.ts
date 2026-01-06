@@ -1,17 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useState, useEffect } from 'react';
-
-// Simple logger for client-side hooks
-const hookLogger = {
-  info: (component: string, message: string, data?: any) => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`[${component}] ${message}`, data || '');
-    }
-  },
-  error: (component: string, message: string, error?: any) => {
-    console.error(`[${component}] ${message}`, error || '');
-  }
-};
+import { hookLogger } from '../utils/hook-logger';
 
 export type ThemePreference = 'system' | 'light' | 'dark';
 export type ResolvedTheme = 'light' | 'dark';
@@ -48,14 +36,12 @@ export function useTheme() {
     resolveTheme(getStoredPreference())
   );
 
-  // Update resolved theme when preference changes
   useEffect(() => {
     const newResolvedTheme = resolveTheme(preference);
     setResolvedTheme(newResolvedTheme);
     document.documentElement.setAttribute('data-theme', newResolvedTheme);
   }, [preference]);
 
-  // Listen for system theme changes when preference is 'system'
   useEffect(() => {
     if (preference !== 'system') return;
 
@@ -76,7 +62,6 @@ export function useTheme() {
       setPreference(newPreference);
     } catch (e) {
       hookLogger.warn('HOOK', 'Failed to save theme preference to localStorage:', e);
-      // Still update the theme even if localStorage fails
       setPreference(newPreference);
     }
   };

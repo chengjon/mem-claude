@@ -96,7 +96,7 @@ async function cleanupHook(input?: SessionEndInput): Promise<void> {
       
       // Mark as non-critical for cleanup operations
       cleanupError.severity = ErrorSeverity.LOW;
-      cleanupError.action = ErrorAction.IGNORE;
+      cleanupError.action = ErrorAction.LOG_ONLY;
       
       // Don't throw for cleanup operations - they're best-effort
       return null;
@@ -146,12 +146,11 @@ if (stdin.isTTY) {
   stdin.on('data', (chunk) => input += chunk);
   stdin.on('end', async () => {
     try {
-      const parsed = input ? JSON.parse(input) : undefined;
+      const parsed = input ? JSON.parse(input) as SessionEndInput : undefined;
       await cleanupHook(parsed);
     } catch (error: any) {
       logger.error('HOOK', 'Cleanup hook failed in pipeline mode', { 
-        error: error.message,
-        sessionId: input?.session_id 
+        error: error.message
       });
       // Always exit successfully for cleanup hooks
       logger.info('HOOK', '{"continue": true, "suppressOutput": true}');

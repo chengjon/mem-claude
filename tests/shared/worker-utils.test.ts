@@ -186,14 +186,12 @@ describe('worker-utils', () => {
       // This test verifies the function doesn't throw
       // Actual worker startup requires proper environment
       const result = await ensureWorkerRunning().catch(() => false);
-      expect(typeof result).toBe('undefined' || 'boolean');
+      expect(result === undefined || typeof result === 'boolean').toBe(true);
     });
 
     it('handles worker already running case', async () => {
-      // Mock the scenario where worker is already healthy
-      // In real environment, this would check health endpoint
       const result = await ensureWorkerRunning().catch(() => false);
-      expect(typeof result).toBe('undefined' || 'boolean');
+      expect(result === undefined || typeof result === 'boolean').toBe(true);
     });
   });
 

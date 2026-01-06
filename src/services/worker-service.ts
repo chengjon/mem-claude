@@ -10,6 +10,7 @@ import express from 'express';
 import http from 'http';
 import path from 'path';
 import * as fs from 'fs';
+import { homedir } from 'os';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { getWorkerPort, getWorkerHost } from '../shared/worker-utils.js';
@@ -31,6 +32,7 @@ import { SearchManager } from './worker/SearchManager.js';
 import { FormattingService } from './worker/FormattingService.js';
 import { TimelineService } from './worker/TimelineService.js';
 import { SessionEventBroadcaster } from './worker/events/SessionEventBroadcaster.js';
+import { EnhancementService } from './worker/EnhancementService.js';
 
 // Import HTTP layer
 import { createMiddleware, summarizeRequestBody as summarizeBody, requireLocalhost } from './worker/http/middleware.js';
@@ -39,6 +41,7 @@ import { SessionRoutes } from './worker/http/routes/SessionRoutes.js';
 import { DataRoutes } from './worker/http/routes/DataRoutes.js';
 import { SearchRoutes } from './worker/http/routes/SearchRoutes.js';
 import { SettingsRoutes } from './worker/http/routes/SettingsRoutes.js';
+import { EnhancementRoutes } from './worker/http/routes/EnhancementRoutes.js';
 
 export class WorkerService {
   private app: express.Application;
@@ -58,6 +61,7 @@ export class WorkerService {
   private paginationHelper: PaginationHelper;
   private settingsManager: SettingsManager;
   private sessionEventBroadcaster: SessionEventBroadcaster;
+  private enhancementService: EnhancementService | null = null;
 
   // Route handlers
   private viewerRoutes: ViewerRoutes;
@@ -65,6 +69,7 @@ export class WorkerService {
   private dataRoutes: DataRoutes;
   private searchRoutes: SearchRoutes | null;
   private settingsRoutes: SettingsRoutes;
+  private enhancementRoutes: EnhancementRoutes | null = null;
 
   // Initialization tracking
   private initializationComplete: Promise<void>;
@@ -105,6 +110,7 @@ export class WorkerService {
     // SearchRoutes needs SearchManager which requires initialized DB - will be created in initializeBackground()
     this.searchRoutes = null;
     this.settingsRoutes = new SettingsRoutes(this.settingsManager);
+    // enhancementService and enhancementRoutes will be initialized in initializeBackground() after DB is ready
 
     this.setupMiddleware();
     this.setupRoutes();
@@ -156,14 +162,12 @@ export class WorkerService {
 
     // Version endpoint - returns the worker's current version
     this.app.get('/api/version', (_req, res) => {
-      const { homedir } = require('os');
-      const { readFileSync } = require('fs');
       const marketplaceRoot = path.join(homedir(), '.claude', 'plugins', 'marketplaces', 'chengjon');
       const packageJsonPath = path.join(marketplaceRoot, 'package.json');
 
       try {
         // Read version from marketplace package.json
-        const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
+        const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
         res.status(200).json({ version: packageJson.version });
       } catch (error) {
         logger.error('SYSTEM', 'Failed to read version', {
@@ -496,6 +500,10 @@ export class WorkerService {
 
       // Initialize database (once, stays open)
       await this.dbManager.initialize();
+
+      // Initialize enhancement services (requires initialized database)
+      this.enhancementService = new EnhancementService(this.dbManager.getDb());
+      this.enhancementRoutes = new EnhancementRoutes(this.app, this.enhancementService);
 
       // Initialize search services (requires initialized database)
       const formattingService = new FormattingService();

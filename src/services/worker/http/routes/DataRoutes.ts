@@ -65,7 +65,9 @@ export class DataRoutes extends BaseRouteHandler {
    */
   private handleGetObservations = this.wrapHandler((req: Request, res: Response): void => {
     const { offset, limit, project } = this.parsePaginationParams(req);
-    const result = this.paginationHelper.getObservations(offset, limit, project);
+    const includeToolCalls = req.query.includeToolCalls === 'true';
+    const type = req.query.type as string | undefined;
+    const result = this.paginationHelper.getObservations(offset, limit, project, includeToolCalls, type);
     res.json(result);
   });
 
@@ -421,8 +423,10 @@ export class DataRoutes extends BaseRouteHandler {
     logic?: 'AND' | 'OR';
     conversationType?: 'user' | 'ai' | 'both';
   } {
+    const MAX_PAGINATION_LIMIT = 100;
+    const DEFAULT_PAGINATION_LIMIT = 20;
     const offset = parseInt(req.query.offset as string, 10) || 0;
-    const limit = Math.min(parseInt(req.query.limit as string, 10) || 20, 100); // Max 100
+    const limit = Math.min(parseInt(req.query.limit as string, 10) || DEFAULT_PAGINATION_LIMIT, MAX_PAGINATION_LIMIT);
     const project = req.query.project as string | undefined;
     
     // Parse keywords (comma-separated) into array
